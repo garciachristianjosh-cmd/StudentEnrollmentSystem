@@ -1,0 +1,21 @@
+<%- include('../layouts/header') %>
+
+<div class="container py-5">
+  <div class="alert alert-success">
+    <h4 class="mb-1">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      Welcome, <%= user.firstName %> <%= user.lastName %>
+    </h4>
+    <p class="mb-0">
+      Student ID: <strong><%= user.studentId %></strong> &nbsp;|&nbsp;
+      Course: <strong><%= user.course %></strong> &nbsp;|&nbsp;
+      Year Level: <strong><%= user.yearLevel %></strong>
+    </p>
+  </div>
+  <p class="text-muted">Student dashboard coming in Phase 9.</p>
+  <a href="/auth/logout" class="btn btn-outline-danger">
+    <i class="bi bi-box-arrow-right me-2"></i>Logout
+  </a>
+</div>
+
+<%- include('../layouts/footer') %>

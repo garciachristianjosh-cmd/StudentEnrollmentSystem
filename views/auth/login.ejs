@@ -1,0 +1,106 @@
+<%- include('../layouts/header') %>
+
+<div class="container-fluid min-vh-100 d-flex align-items-center 
+            justify-content-center bg-light">
+  <div class="col-12 col-sm-8 col-md-5 col-lg-4">
+
+    <!-- Card -->
+    <div class="card shadow-sm border-0 rounded-3">
+      <div class="card-body p-4 p-md-5">
+
+        <!-- Logo / Heading -->
+        <div class="text-center mb-4">
+          <i class="bi bi-mortarboard-fill text-primary" 
+             style="font-size:3rem;"></i>
+          <h4 class="fw-bold mt-2 mb-0">Student Enrollment System</h4>
+          <p class="text-muted small">Sign in to your account</p>
+        </div>
+
+        <!-- Error Alert -->
+        <% if (error) { %>
+          <div class="alert alert-danger alert-dismissible fade show 
+                       py-2 small" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            <%= error %>
+            <button type="button" class="btn-close btn-close-sm" 
+                    data-bs-dismiss="alert"></button>
+          </div>
+        <% } %>
+
+        <!-- Login Form -->
+        <form action="/auth/login" method="POST" novalidate>
+
+          <div class="mb-3">
+            <label for="username" class="form-label fw-semibold">
+              Username
+            </label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-person"></i>
+              </span>
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                name="username"
+                placeholder="Enter your username"
+                autocomplete="username"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label for="password" class="form-label fw-semibold">
+              Password
+            </label>
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="bi bi-lock"></i>
+              </span>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                name="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+              />
+              <button class="btn btn-outline-secondary" type="button"
+                      id="togglePassword" tabindex="-1">
+                <i class="bi bi-eye" id="eyeIcon"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- Footer note -->
+    <p class="text-center text-muted small mt-3">
+      Contact your administrator if you cannot log in.
+    </p>
+
+  </div>
+</div>
+
+<!-- Toggle password visibility -->
+<script>
+  document.getElementById('togglePassword').addEventListener('click', () => {
+    const input   = document.getElementById('password');
+    const icon    = document.getElementById('eyeIcon');
+    const visible = input.type === 'text';
+    input.type    = visible ? 'password' : 'text';
+    icon.className = visible ? 'bi bi-eye' : 'bi bi-eye-slash';
+  });
+</script>
+
+<%- include('../layouts/footer') %>

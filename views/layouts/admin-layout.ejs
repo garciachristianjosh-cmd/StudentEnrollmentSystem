@@ -1,0 +1,103 @@
+<%- include('./header') %>
+<body class="admin-body">
+
+<div id="sidebar-overlay"></div>
+
+<nav id="sidebar">
+  <div class="sidebar-brand">
+    <span>Administration</span>
+    <h5 class="mt-1">
+      <i class="bi bi-mortarboard-fill me-2 text-primary"></i>
+      Enrollment System
+    </h5>
+  </div>
+
+  <div class="pt-2">
+    <div class="nav-section-label">Main Menu</div>
+    <a href="/admin/dashboard"
+       class="nav-link <%= activePage === 'dashboard' ? 'active' : '' %>">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a href="/admin/students"
+       class="nav-link <%= activePage === 'students' ? 'active' : '' %>">
+      <i class="bi bi-people-fill"></i> Students
+    </a>
+    <a href="/admin/subjects"
+       class="nav-link <%= activePage === 'subjects' ? 'active' : '' %>">
+      <i class="bi bi-book-fill"></i> Subjects
+    </a>
+    <a href="/admin/enrollment"
+       class="nav-link <%= activePage === 'enrollment' ? 'active' : '' %>">
+      <i class="bi bi-pencil-square"></i> Enrollment
+    </a>
+    <div class="nav-section-label mt-2">Reports</div>
+    <a href="/admin/reports"
+       class="nav-link <%= activePage === 'reports' ? 'active' : '' %>">
+      <i class="bi bi-bar-chart-fill"></i> Reports
+    </a>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <div class="admin-avatar">
+        <%= user.username.charAt(0).toUpperCase() %>
+      </div>
+      <div>
+        <div class="text-white fw-semibold small"><%= user.username %></div>
+        <div style="color:rgba(255,255,255,0.45);font-size:0.72rem;">
+          Administrator
+        </div>
+      </div>
+    </div>
+    <a href="/auth/logout" class="nav-link text-danger p-0">
+      <i class="bi bi-box-arrow-right"></i> Logout
+    </a>
+  </div>
+</nav>
+
+<div id="main-content">
+  <div id="topnav">
+    <button class="btn btn-sm btn-outline-secondary d-lg-none me-2"
+            id="sidebarToggle">
+      <i class="bi bi-list fs-5"></i>
+    </button>
+    <h6 class="topnav-title"><%= title %></h6>
+    <div class="d-flex align-items-center gap-3 ms-auto">
+      <span class="text-muted small d-none d-sm-inline">
+        <i class="bi bi-calendar3 me-1"></i>
+        <%= new Date().toLocaleDateString('en-US', {
+          weekday: 'short', year: 'numeric',
+          month: 'short', day: 'numeric'
+        }) %>
+      </span>
+      <div class="admin-avatar">
+        <%= user.username.charAt(0).toUpperCase() %>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <%- include(pageView, locals) %>
+  </div>
+
+</div>
+
+<script>
+  const toggle   = document.getElementById('sidebarToggle');
+  const sidebar  = document.getElementById('sidebar');
+  const overlay  = document.getElementById('sidebar-overlay');
+
+  function openSidebar()  {
+    sidebar.classList.add('show');
+    overlay.classList.add('show');
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('show');
+    overlay.classList.remove('show');
+  }
+
+  if (toggle)  toggle.addEventListener('click', openSidebar);
+  if (overlay) overlay.addEventListener('click', closeSidebar);
+</script>
+
+<%- include('./footer') %>

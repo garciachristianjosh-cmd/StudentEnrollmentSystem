@@ -1,0 +1,107 @@
+<div class="d-flex align-items-center mb-4 gap-3">
+  <a href="/admin/subjects" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <div>
+    <h4 class="fw-bold mb-0" style="color:#1e2a3a;">Edit Subject</h4>
+    <p class="text-muted small mb-0">
+      <%= subject.subject_code %> — <%= subject.subject_name %>
+    </p>
+  </div>
+</div>
+
+<% if (errors.length > 0) { %>
+  <div class="alert alert-danger mb-4">
+    <div class="fw-semibold mb-1">
+      <i class="bi bi-exclamation-triangle-fill me-1"></i>
+      Please fix the following errors:
+    </div>
+    <ul class="mb-0 ps-3">
+      <% errors.forEach(function(e) { %>
+        <li><%= e %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="POST" action="/admin/subjects/<%= subject.id %>/edit" novalidate>
+  <div class="card border-0 shadow-sm rounded-3 mb-4">
+    <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+      <h6 class="fw-bold mb-0">
+        <i class="bi bi-book-fill me-2 text-primary"></i>
+        Subject Details
+      </h6>
+    </div>
+    <div class="card-body px-4 pb-4">
+      <div class="row g-3">
+
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">
+            Subject Code <span class="text-danger">*</span>
+          </label>
+          <input type="text" name="subject_code" class="form-control"
+                 value="<%= old.subject_code || '' %>"
+                 style="text-transform:uppercase;"
+                 required />
+        </div>
+
+        <div class="col-md-8">
+          <label class="form-label fw-semibold">
+            Subject Name <span class="text-danger">*</span>
+          </label>
+          <input type="text" name="subject_name" class="form-control"
+                 value="<%= old.subject_name || '' %>"
+                 required />
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">
+            Units <span class="text-danger">*</span>
+          </label>
+          <select name="units" class="form-select" required>
+            <% [1,2,3,4,5,6].forEach(function(u) { %>
+              <option value="<%= u %>"
+                <%= old.units == u ? 'selected' : '' %>>
+                <%= u %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="col-md-9">
+          <label class="form-label fw-semibold">
+            Schedule <span class="text-danger">*</span>
+          </label>
+          <input type="text" name="schedule" class="form-control"
+                 value="<%= old.schedule || '' %>"
+                 required />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">
+            Room <span class="text-danger">*</span>
+          </label>
+          <input type="text" name="room" class="form-control"
+                 value="<%= old.room || '' %>"
+                 required />
+        </div>
+
+        <div class="col-md-8">
+          <label class="form-label fw-semibold">Instructor</label>
+          <input type="text" name="instructor" class="form-control"
+                 value="<%= old.instructor || '' %>" />
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary px-4">
+      <i class="bi bi-save me-2"></i>Save Changes
+    </button>
+    <a href="/admin/subjects" class="btn btn-outline-secondary px-4">
+      Cancel
+    </a>
+  </div>
+</form>

@@ -1,0 +1,142 @@
+<!-- Page Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="fw-bold mb-0" style="color:#1e2a3a;">Enrollment</h4>
+    <p class="text-muted small mb-0">
+      Select a student to manage their enrollment.
+    </p>
+  </div>
+</div>
+
+<!-- Flash Messages -->
+<% if (flash.success) { %>
+  <div class="alert alert-success alert-dismissible fade show py-2" role="alert">
+    <i class="bi bi-check-circle-fill me-2"></i><%= flash.success %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+<% if (flash.error) { %>
+  <div class="alert alert-danger alert-dismissible fade show py-2" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i><%= flash.error %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+
+<!-- Search -->
+<div class="card border-0 shadow-sm rounded-3 mb-3">
+  <div class="card-body py-3 px-4">
+    <form method="GET" action="/admin/enrollment" class="d-flex gap-2">
+      <input
+        type="text"
+        name="search"
+        class="form-control"
+        placeholder="Search by name, student ID, or course..."
+        value="<%= search %>"
+      />
+      <button class="btn btn-primary px-4" type="submit">
+        <i class="bi bi-search"></i>
+      </button>
+      <% if (search) { %>
+        <a href="/admin/enrollment" class="btn btn-outline-secondary">Clear</a>
+      <% } %>
+    </form>
+  </div>
+</div>
+
+<!-- Student List -->
+<div class="card border-0 shadow-sm rounded-3">
+  <div class="table-responsive">
+    <table class="table admin-table mb-0">
+      <thead>
+        <tr>
+          <th class="px-4">Student ID</th>
+          <th>Name</th>
+          <th>Course</th>
+          <th>Year</th>
+          <th>Status</th>
+          <th class="text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (students.length === 0) { %>
+          <tr>
+            <td colspan="6" class="text-center text-muted py-5">
+              <i class="bi bi-people fs-2 d-block mb-2"></i>
+              No students found.
+            </td>
+          </tr>
+        <% } else { %>
+          <% students.forEach(function(s) { %>
+            <tr>
+              <td class="px-4">
+                <span class="badge bg-light text-dark border fw-normal">
+                  <%= s.student_id %>
+                </span>
+              </td>
+              <td>
+                <div class="fw-semibold">
+                  <%= s.last_name %>, <%= s.first_name %>
+                </div>
+                <div class="text-muted small"><%= s.email %></div>
+              </td>
+              <td><%= s.course %></td>
+              <td>Year <%= s.year_level %></td>
+              <td>
+                <% if (s.is_active) { %>
+                  <span class="badge rounded-pill bg-success-subtle text-success">
+                    Active
+                  </span>
+                <% } else { %>
+                  <span class="badge rounded-pill bg-secondary-subtle text-secondary">
+                    Inactive
+                  </span>
+                <% } %>
+              </td>
+              <td class="text-center">
+                <a href="/admin/enrollment/<%= s.id %>"
+                   class="btn btn-sm btn-primary">
+                  <i class="bi bi-pencil-square me-1"></i>Manage
+                </a>
+              </td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <% if (totalPages > 1) { %>
+    <div class="card-footer bg-white border-0 py-3 px-4">
+      <div class="d-flex align-items-center justify-content-between">
+        <span class="text-muted small">
+          Page <%= page %> of <%= totalPages %>
+        </span>
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+              <a class="page-link"
+                 href="/admin/enrollment?page=<%= page - 1 %>&search=<%= search %>">
+                &laquo;
+              </a>
+            </li>
+            <% for (let p = 1; p <= totalPages; p++) { %>
+              <li class="page-item <%= p === page ? 'active' : '' %>">
+                <a class="page-link"
+                   href="/admin/enrollment?page=<%= p %>&search=<%= search %>">
+                  <%= p %>
+                </a>
+              </li>
+            <% } %>
+            <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>">
+              <a class="page-link"
+                 href="/admin/enrollment?page=<%= page + 1 %>&search=<%= search %>">
+                &raquo;
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  <% } %>
+</div>

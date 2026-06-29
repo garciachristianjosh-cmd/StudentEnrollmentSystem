@@ -1,0 +1,135 @@
+<!-- Page Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="fw-bold mb-0" style="color:#1e2a3a;">Dashboard</h4>
+    <p class="text-muted small mb-0">Welcome back, <%= user.username %>.</p>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="card stat-card h-100">
+      <div class="card-body d-flex align-items-center gap-3 p-4">
+        <div class="stat-icon" style="background:#eff6ff;">
+          <i class="bi bi-people-fill text-primary"></i>
+        </div>
+        <div>
+          <div class="stat-value"><%= summary.totalStudents %></div>
+          <div class="stat-label">Total Students</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="card stat-card h-100">
+      <div class="card-body d-flex align-items-center gap-3 p-4">
+        <div class="stat-icon" style="background:#f0fdf4;">
+          <i class="bi bi-book-fill text-success"></i>
+        </div>
+        <div>
+          <div class="stat-value"><%= summary.totalSubjects %></div>
+          <div class="stat-label">Active Subjects</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="card stat-card h-100">
+      <div class="card-body d-flex align-items-center gap-3 p-4">
+        <div class="stat-icon" style="background:#fefce8;">
+          <i class="bi bi-pencil-square text-warning"></i>
+        </div>
+        <div>
+          <div class="stat-value"><%= summary.activeEnrollments %></div>
+          <div class="stat-label">Enrolled</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="card stat-card h-100">
+      <div class="card-body d-flex align-items-center gap-3 p-4">
+        <div class="stat-icon" style="background:#fdf4ff;">
+          <i class="bi bi-bar-chart-fill" style="color:#9333ea;"></i>
+        </div>
+        <div>
+          <div class="stat-value"><%= summary.totalEnrollments %></div>
+          <div class="stat-label">All-time Enrollments</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Recent Enrollments Table -->
+<div class="card border-0 shadow-sm rounded-3">
+  <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+    <h6 class="fw-bold mb-0" style="color:#1e2a3a;">
+      <i class="bi bi-clock-history me-2 text-primary"></i>
+      Recent Enrollment Activity
+    </h6>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table admin-table mb-0">
+        <thead>
+          <tr>
+            <th class="px-4">Student ID</th>
+            <th>Name</th>
+            <th>Subject</th>
+            <th>Course</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (recentEnrollments.length === 0) { %>
+            <tr>
+              <td colspan="6" class="text-center text-muted py-4">
+                No enrollment records yet.
+              </td>
+            </tr>
+          <% } else { %>
+            <% recentEnrollments.forEach(function(e) { %>
+              <tr>
+                <td class="px-4">
+                  <span class="badge bg-light text-dark border fw-normal">
+                    <%= e.student_id %>
+                  </span>
+                </td>
+                <td><%= e.last_name %>, <%= e.first_name %></td>
+                <td>
+                  <span class="fw-semibold"><%= e.subject_code %></span>
+                  <span class="text-muted"> — <%= e.subject_name %></span>
+                </td>
+                <td><%= e.course %></td>
+                <td class="text-muted small">
+                  <%= new Date(e.enrolled_at).toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric'
+                  }) %>
+                </td>
+                <td>
+                  <% if (e.status === 'enrolled') { %>
+                    <span class="badge bg-success-subtle text-success rounded-pill">
+                      Enrolled
+                    </span>
+                  <% } else { %>
+                    <span class="badge bg-danger-subtle text-danger rounded-pill">
+                      Dropped
+                    </span>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

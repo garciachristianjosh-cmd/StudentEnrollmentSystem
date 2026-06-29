@@ -1,0 +1,187 @@
+<div class="d-flex align-items-center mb-4 gap-3">
+  <a href="/admin/students" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <div>
+    <h4 class="fw-bold mb-0" style="color:#1e2a3a;">Add New Student</h4>
+    <p class="text-muted small mb-0">
+      Creates both a student profile and a login account.
+    </p>
+  </div>
+</div>
+
+<% if (errors.length > 0) { %>
+  <div class="alert alert-danger mb-4">
+    <div class="fw-semibold mb-1">
+      <i class="bi bi-exclamation-triangle-fill me-1"></i>
+      Please fix the following errors:
+    </div>
+    <ul class="mb-0 ps-3">
+      <% errors.forEach(function(e) { %>
+        <li><%= e %></li>
+      <% }) %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="POST" action="/admin/students/create" novalidate>
+  <div class="row g-4">
+
+    <!-- Left column -->
+    <div class="col-lg-8">
+
+      <!-- Personal Information -->
+      <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+          <h6 class="fw-bold mb-0">
+            <i class="bi bi-person-fill me-2 text-primary"></i>
+            Personal Information
+          </h6>
+        </div>
+        <div class="card-body px-4 pb-4">
+          <div class="row g-3">
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">
+                First Name <span class="text-danger">*</span>
+              </label>
+              <input type="text" name="first_name" class="form-control"
+                     value="<%= old.first_name || '' %>"
+                     placeholder="Juan" required />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">Middle Name</label>
+              <input type="text" name="middle_name" class="form-control"
+                     value="<%= old.middle_name || '' %>"
+                     placeholder="Optional" />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">
+                Last Name <span class="text-danger">*</span>
+              </label>
+              <input type="text" name="last_name" class="form-control"
+                     value="<%= old.last_name || '' %>"
+                     placeholder="dela Cruz" required />
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">
+                Email Address <span class="text-danger">*</span>
+              </label>
+              <input type="email" name="email" class="form-control"
+                     value="<%= old.email || '' %>"
+                     placeholder="juan@example.com" required />
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Contact Number</label>
+              <input type="text" name="contact_number" class="form-control"
+                     value="<%= old.contact_number || '' %>"
+                     placeholder="09XXXXXXXXX" />
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Academic Information -->
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+          <h6 class="fw-bold mb-0">
+            <i class="bi bi-mortarboard-fill me-2 text-success"></i>
+            Academic Information
+          </h6>
+        </div>
+        <div class="card-body px-4 pb-4">
+          <div class="row g-3">
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">
+                Student ID <span class="text-danger">*</span>
+              </label>
+              <input type="text" name="student_id" class="form-control"
+                     value="<%= old.student_id || '' %>"
+                     placeholder="2024-0001" required />
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">
+                Course <span class="text-danger">*</span>
+              </label>
+              <input type="text" name="course" class="form-control"
+                     value="<%= old.course || '' %>"
+                     placeholder="BS Computer Science" required />
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">
+                Year Level <span class="text-danger">*</span>
+              </label>
+              <select name="year_level" class="form-select" required>
+                <option value="">Select year</option>
+                <% [1,2,3,4,5].forEach(function(y) { %>
+                  <option value="<%= y %>"
+                    <%= old.year_level == y ? 'selected' : '' %>>
+                    Year <%= y %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right column: Login Account -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+          <h6 class="fw-bold mb-0">
+            <i class="bi bi-key-fill me-2 text-warning"></i>
+            Login Account
+          </h6>
+        </div>
+        <div class="card-body px-4 pb-4">
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">
+              Username <span class="text-danger">*</span>
+            </label>
+            <input type="text" name="username" class="form-control"
+                   value="<%= old.username || '' %>"
+                   placeholder="student01" required />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">
+              Temporary Password <span class="text-danger">*</span>
+            </label>
+            <input type="text" name="password" class="form-control"
+                   value="<%= old.password || '' %>"
+                   placeholder="Min. 6 characters" required />
+            <div class="form-text">
+              The student must change this on first login.
+            </div>
+          </div>
+
+          <div class="alert alert-info py-2 small">
+            <i class="bi bi-info-circle-fill me-1"></i>
+            Share the username and temporary password with the student securely.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="d-flex gap-2 mt-4">
+    <button type="submit" class="btn btn-primary px-4">
+      <i class="bi bi-person-plus-fill me-2"></i>Create Student
+    </button>
+    <a href="/admin/students" class="btn btn-outline-secondary px-4">Cancel</a>
+  </div>
+</form>

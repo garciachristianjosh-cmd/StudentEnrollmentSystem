@@ -1,0 +1,44 @@
+<%- include('./header') %>
+<body class="student-body">
+
+<!-- Top Navigation -->
+<nav id="student-nav">
+  <a href="/student/dashboard" class="nav-brand">
+    <i class="bi bi-mortarboard-fill"></i>
+    Enrollment System
+  </a>
+
+  <div class="nav-links">
+    <a href="/student/dashboard"
+       class="<%= activePage === 'dashboard' ? 'active' : '' %>">
+      <i class="bi bi-speedometer2"></i>
+      <span class="d-none d-sm-inline">Dashboard</span>
+    </a>
+    <a href="/student/subjects"
+       class="<%= activePage === 'subjects' ? 'active' : '' %>">
+      <i class="bi bi-book-fill"></i>
+      <span class="d-none d-sm-inline">My Subjects</span>
+    </a>
+    <a href="/student/schedule"
+       class="<%= activePage === 'schedule' ? 'active' : '' %>">
+      <i class="bi bi-calendar3"></i>
+      <span class="d-none d-sm-inline">Schedule</span>
+    </a>
+
+    <div class="student-avatar ms-2">
+      <%= user.firstName ? user.firstName.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase() %>
+    </div>
+
+    <a href="/auth/logout" class="ms-1">
+      <i class="bi bi-box-arrow-right"></i>
+      <span class="d-none d-sm-inline">Logout</span>
+    </a>
+  </div>
+</nav>
+
+<!-- Page Content -->
+<div class="student-content">
+  <%- include(pageView, locals) %>
+</div>
+
+<%- include('./footer') %>

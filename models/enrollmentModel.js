@@ -91,3 +91,29 @@ exports.countByStudent = async (studentId) => {
   );
   return count;
 };
+
+/**
+ * Get full enrollment details for a student.
+ * Used by the student dashboard and schedule pages.
+ */
+exports.getStudentSchedule = async (studentId) => {
+  const [rows] = await db.execute(
+    `SELECT
+       e.id          AS enrollment_id,
+       e.status,
+       e.enrolled_at,
+       sub.subject_code,
+       sub.subject_name,
+       sub.units,
+       sub.schedule,
+       sub.room,
+       sub.instructor
+     FROM enrollments e
+     JOIN subjects sub ON sub.id = e.subject_id
+     WHERE e.student_id = ?
+       AND e.status = 'enrolled'
+     ORDER BY sub.subject_code ASC`,
+    [studentId]
+  );
+  return rows;
+};

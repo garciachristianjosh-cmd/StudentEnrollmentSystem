@@ -1,0 +1,175 @@
+/* ── Student Layout ──────────────────────────────────────────── */
+:root {
+  --student-nav-bg:   #1e2a3a;
+  --student-accent:   #3b82f6;
+  --student-body-bg:  #f0f2f5;
+}
+
+body.student-body {
+  background-color: var(--student-body-bg);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ── Top Navigation ──────────────────────────────────────────── */
+#student-nav {
+  background-color: var(--student-nav-bg);
+  padding: 0 1.5rem;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+#student-nav .nav-brand {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#student-nav .nav-brand i {
+  color: var(--student-accent);
+  font-size: 1.25rem;
+}
+
+#student-nav .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+#student-nav .nav-links a {
+  color: rgba(255,255,255,0.75);
+  text-decoration: none;
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+#student-nav .nav-links a:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+#student-nav .nav-links a.active {
+  background: var(--student-accent);
+  color: #fff;
+}
+
+#student-nav .student-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--student-accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+/* ── Page Content ────────────────────────────────────────────── */
+.student-content {
+  padding: 1.75rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── Profile Card ────────────────────────────────────────────── */
+.profile-card {
+  background: linear-gradient(135deg, #1e2a3a 0%, #2c3e52 100%);
+  border-radius: 16px;
+  color: #fff;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-card::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 180px;
+  height: 180px;
+  background: rgba(59,130,246,0.15);
+  border-radius: 50%;
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--student-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+/* ── Stat pills on profile card ──────────────────────────────── */
+.profile-pill {
+  background: rgba(255,255,255,0.1);
+  border-radius: 30px;
+  padding: 0.35rem 1rem;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.85);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ── Schedule cards ──────────────────────────────────────────── */
+.schedule-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  transition: transform 0.15s, box-shadow 0.15s;
+  border-left: 4px solid var(--student-accent);
+}
+
+.schedule-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+}
+
+.schedule-card .subject-code {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--student-accent);
+}
+
+/* ── Table tweaks ────────────────────────────────────────────── */
+.student-table th {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #6b7280;
+  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.student-table td {
+  vertical-align: middle;
+  font-size: 0.88rem;
+  color: #374151;
+}

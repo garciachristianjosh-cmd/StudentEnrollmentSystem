@@ -1,0 +1,276 @@
+<!-- Page Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="fw-bold mb-0" style="color:#1e2a3a;">Enrollment Reports</h4>
+    <p class="text-muted small mb-0">
+      <%= total %> record<%= total !== 1 ? 's' : '' %> found
+    </p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="/admin/reports/export?search=<%= filters.search
+       %>&course=<%= filters.course
+       %>&year_level=<%= filters.year_level
+       %>&status=<%= filters.status %>"
+       class="btn btn-outline-success btn-sm">
+      <i class="bi bi-filetype-csv me-1"></i>Export CSV
+    </a>
+    <button class="btn btn-outline-secondary btn-sm"
+            onclick="window.print()">
+      <i class="bi bi-printer me-1"></i>Print
+    </button>
+  </div>
+</div>
+
+<!-- Flash -->
+<% if (flash.error) { %>
+  <div class="alert alert-danger alert-dismissible fade show py-2" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i><%= flash.error %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4" id="summary-cards">
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm rounded-3 text-center p-3">
+      <div class="fs-3 fw-bold text-primary"><%= summary.totalStudents %></div>
+      <div class="text-muted small">Total Students</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm rounded-3 text-center p-3">
+      <div class="fs-3 fw-bold text-success"><%= summary.totalSubjects %></div>
+      <div class="text-muted small">Active Subjects</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm rounded-3 text-center p-3">
+      <div class="fs-3 fw-bold text-warning"><%= summary.totalEnrollments %></div>
+      <div class="text-muted small">Active Enrollments</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card border-0 shadow-sm rounded-3 text-center p-3">
+      <div class="fs-3 fw-bold text-purple"
+           style="color:#9333ea;"><%= summary.totalUnits %></div>
+      <div class="text-muted small">Total Units Enrolled</div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm rounded-3 mb-3">
+  <div class="card-body py-3 px-4">
+    <form method="GET" action="/admin/reports">
+      <div class="row g-2 align-items-end">
+
+        <div class="col-12 col-md-4">
+          <label class="form-label small fw-semibold mb-1">Search</label>
+          <input type="text" name="search" class="form-control form-control-sm"
+                 placeholder="Student name or ID..."
+                 value="<%= filters.search %>" />
+        </div>
+
+        <div class="col-6 col-md-3">
+          <label class="form-label small fw-semibold mb-1">Course</label>
+          <select name="course" class="form-select form-select-sm">
+            <option value="">All Courses</option>
+            <% summary.courses.forEach(function(c) { %>
+              <option value="<%= c %>"
+                <%= filters.course === c ? 'selected' : '' %>>
+                <%= c %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="form-label small fw-semibold mb-1">Year</label>
+          <select name="year_level" class="form-select form-select-sm">
+            <option value="">All Years</option>
+            <% [1,2,3,4,5].forEach(function(y) { %>
+              <option value="<%= y %>"
+                <%= filters.year_level == y ? 'selected' : '' %>>
+                Year <%= y %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-2">
+          <label class="form-label small fw-semibold mb-1">Status</label>
+          <select name="status" class="form-select form-select-sm">
+            <option value="">All</option>
+            <option value="enrolled"
+              <%= filters.status === 'enrolled' ? 'selected' : '' %>>
+              Enrolled
+            </option>
+            <option value="dropped"
+              <%= filters.status === 'dropped' ? 'selected' : '' %>>
+              Dropped
+            </option>
+          </select>
+        </div>
+
+        <div class="col-6 col-md-1 d-flex gap-1">
+          <button type="submit" class="btn btn-primary btn-sm w-100">
+            <i class="bi bi-search"></i>
+          </button>
+          <a href="/admin/reports" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-x"></i>
+          </a>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Report Table -->
+<div class="card border-0 shadow-sm rounded-3" id="printable">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table admin-table mb-0">
+        <thead>
+          <tr>
+            <th class="px-4">Student ID</th>
+            <th>Name</th>
+            <th>Course</th>
+            <th class="text-center">Year</th>
+            <th>Subject</th>
+            <th class="text-center">Units</th>
+            <th>Schedule</th>
+            <th>Status</th>
+            <th>Enrolled</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (rows.length === 0) { %>
+            <tr>
+              <td colspan="9" class="text-center text-muted py-5">
+                <i class="bi bi-bar-chart fs-2 d-block mb-2"></i>
+                No records found for the selected filters.
+              </td>
+            </tr>
+          <% } else { %>
+            <% rows.forEach(function(r) { %>
+              <tr>
+                <td class="px-4">
+                  <span class="badge bg-light text-dark border fw-normal">
+                    <%= r.student_id %>
+                  </span>
+                </td>
+                <td>
+                  <div class="fw-semibold">
+                    <%= r.last_name %>, <%= r.first_name %>
+                  </div>
+                  <div class="text-muted" style="font-size:0.75rem;">
+                    <%= r.email %>
+                  </div>
+                </td>
+                <td class="small"><%= r.course %></td>
+                <td class="text-center small">
+                  Year <%= r.year_level %>
+                </td>
+                <td>
+                  <div class="fw-semibold small"><%= r.subject_code %></div>
+                  <div class="text-muted" style="font-size:0.75rem;">
+                    <%= r.subject_name %>
+                  </div>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-light text-dark border">
+                    <%= r.units %>
+                  </span>
+                </td>
+                <td class="text-muted small"><%= r.schedule %></td>
+                <td>
+                  <% if (r.status === 'enrolled') { %>
+                    <span class="badge rounded-pill bg-success-subtle text-success">
+                      Enrolled
+                    </span>
+                  <% } else { %>
+                    <span class="badge rounded-pill bg-danger-subtle text-danger">
+                      Dropped
+                    </span>
+                  <% } %>
+                </td>
+                <td class="text-muted small">
+                  <%= new Date(r.enrolled_at).toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric'
+                  }) %>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <% if (totalPages > 1) { %>
+    <div class="card-footer bg-white border-0 py-3 px-4">
+      <div class="d-flex align-items-center justify-content-between">
+        <span class="text-muted small">
+          Page <%= page %> of <%= totalPages %>
+          &nbsp;·&nbsp; <%= total %> total records
+        </span>
+        <nav>
+          <ul class="pagination pagination-sm mb-0">
+            <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+              <a class="page-link"
+                 href="/admin/reports?page=<%= page - 1
+                   %>&search=<%= filters.search
+                   %>&course=<%= filters.course
+                   %>&year_level=<%= filters.year_level
+                   %>&status=<%= filters.status %>">
+                &laquo;
+              </a>
+            </li>
+            <% for (let p = 1; p <= totalPages; p++) { %>
+              <li class="page-item <%= p === page ? 'active' : '' %>">
+                <a class="page-link"
+                   href="/admin/reports?page=<%= p
+                     %>&search=<%= filters.search
+                     %>&course=<%= filters.course
+                     %>&year_level=<%= filters.year_level
+                     %>&status=<%= filters.status %>">
+                  <%= p %>
+                </a>
+              </li>
+            <% } %>
+            <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>">
+              <a class="page-link"
+                 href="/admin/reports?page=<%= page + 1
+                   %>&search=<%= filters.search
+                   %>&course=<%= filters.course
+                   %>&year_level=<%= filters.year_level
+                   %>&status=<%= filters.status %>">
+                &raquo;
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<!-- Print styles -->
+<style>
+  @media print {
+    #sidebar,
+    #topnav,
+    #summary-cards,
+    .btn,
+    .card-footer,
+    form {
+      display: none !important;
+    }
+    .page-content { padding: 0 !important; }
+    body { background: #fff !important; }
+    .card { box-shadow: none !important; }
+    .table { font-size: 11px; }
+  }
+</style>

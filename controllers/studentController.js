@@ -38,7 +38,7 @@ exports.index = async (req, res) => {
     }));
 
   } catch (err) {
-    console.error(err);
+    console.error('[studentController][index]:', err);
     res.status(500).render('500', { title: 'Error', error: err });
   }
 };

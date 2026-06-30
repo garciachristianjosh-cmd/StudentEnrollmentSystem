@@ -99,15 +99,4 @@
   </div>
 </div>
 
-<!-- Toggle password visibility -->
-<script>
-  document.getElementById('togglePassword').addEventListener('click', () => {
-    const input   = document.getElementById('password');
-    const icon    = document.getElementById('eyeIcon');
-    const visible = input.type === 'text';
-    input.type    = visible ? 'password' : 'text';
-    icon.className = visible ? 'bi bi-eye' : 'bi bi-eye-slash';
-  });
-</script>
-
 <%- include('../layouts/footer') %>

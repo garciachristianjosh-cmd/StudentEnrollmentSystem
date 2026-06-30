@@ -231,3 +231,43 @@ body.admin-body {
 #sidebar-overlay.show {
   display: block;
 }
+
+/* ── Print Styles ────────────────────────────────────────────── */
+@media print {
+
+  /* Hide all admin chrome */
+  #sidebar,
+  #sidebar-overlay,
+  #topnav,
+  #student-nav         { display: none !important; }
+
+  /* Remove main content margin (sidebar is gone) */
+  #main-content        { margin-left: 0 !important; }
+
+  /* Remove page padding */
+  .page-content        { padding: 0 !important; }
+
+  /* Hide non-report elements on the reports page */
+  .no-print            { display: none !important; }
+
+  /* Clean up card shadows for print */
+  .card                { box-shadow: none !important; border: 1px solid #dee2e6 !important; }
+
+  /* Tighten table font for print */
+  .table               { font-size: 11px !important; }
+  .table th,
+  .table td            { padding: 0.35rem 0.5rem !important; }
+
+  /* Ensure background colors print (badges, status indicators) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Force page to white */
+  body                 { background: #fff !important; }
+
+  /* Avoid breaking rows across pages */
+  tr                   { break-inside: avoid; }
+  .card                { break-inside: avoid; }
+}

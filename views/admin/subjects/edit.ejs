@@ -24,6 +24,22 @@
   </div>
 <% } %>
 
+<%
+  // schedule_days may be a comma string (from DB) or
+  // an array (from req.body on validation failure)
+  let resolvedDays = [];
+
+  if (old.schedule_days) {
+    if (Array.isArray(old.schedule_days)) {
+      // Came from req.body — already an array of full day names
+      resolvedDays = old.schedule_days;
+    } else {
+      // Came from DB — comma-separated string e.g. "Mon,Wed,Fri"
+      resolvedDays = old.schedule_days.split(',').map(d => d.trim());
+    }
+  }
+%>
+
 <form method="POST" action="/admin/subjects/<%= subject.id %>/edit" novalidate>
   <div class="card border-0 shadow-sm rounded-3 mb-4">
     <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
@@ -68,15 +84,6 @@
           </select>
         </div>
 
-        <div class="col-md-9">
-          <label class="form-label fw-semibold">
-            Schedule <span class="text-danger">*</span>
-          </label>
-          <input type="text" name="schedule" class="form-control"
-                 value="<%= old.schedule || '' %>"
-                 required />
-        </div>
-
         <div class="col-md-4">
           <label class="form-label fw-semibold">
             Room <span class="text-danger">*</span>
@@ -86,13 +93,82 @@
                  required />
         </div>
 
-        <div class="col-md-8">
+        <div class="col-md-5">
           <label class="form-label fw-semibold">Instructor</label>
           <input type="text" name="instructor" class="form-control"
                  value="<%= old.instructor || '' %>" />
         </div>
 
       </div>
+    </div>
+  </div>
+
+  <!-- Schedule Card -->
+  <div class="card border-0 shadow-sm rounded-3 mb-4">
+    <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+      <h6 class="fw-bold mb-0">
+        <i class="bi bi-clock-fill me-2 text-warning"></i>
+        Schedule
+      </h6>
+    </div>
+    <div class="card-body px-4 pb-4">
+
+      <!-- Days -->
+      <label class="form-label fw-semibold">
+        Days <span class="text-danger">*</span>
+      </label>
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <% ['Mon','Tue','Wed','Thu','Fri','Sat'].forEach(function(day) { %>
+          <div class="form-check form-check-inline m-0">
+            <input class="form-check-input day-checkbox"
+                   type="checkbox"
+                   name="schedule_days"
+                   id="day_<%= day %>"
+                   value="<%= day %>"
+                   <%= resolvedDays.includes(day) ? 'checked' : '' %> />
+            <label class="form-check-label fw-semibold"
+                   for="day_<%= day %>">
+              <%= day %>
+            </label>
+          </div>
+        <% }) %>
+      </div>
+
+      <!-- Time Pickers -->
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">
+            Start Time <span class="text-danger">*</span>
+          </label>
+          <input type="time" name="schedule_start"
+                 id="schedule_start"
+                 class="form-control"
+                 value="<%= old.schedule_start
+                   ? old.schedule_start.substring(0,5)
+                   : '' %>"
+                 required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">
+            End Time <span class="text-danger">*</span>
+          </label>
+          <input type="time" name="schedule_end"
+                 id="schedule_end"
+                 class="form-control"
+                 value="<%= old.schedule_end
+                   ? old.schedule_end.substring(0,5)
+                   : '' %>"
+                 required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Preview</label>
+          <div class="form-control bg-light text-muted"
+               id="schedulePreview">
+            <%= old.schedule || '—' %>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 

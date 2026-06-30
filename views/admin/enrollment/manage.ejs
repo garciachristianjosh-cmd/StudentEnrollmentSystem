@@ -23,8 +23,16 @@
   </div>
 <% } %>
 <% if (flash.error) { %>
-  <div class="alert alert-danger alert-dismissible fade show py-2" role="alert">
-    <i class="bi bi-exclamation-triangle-fill me-2"></i><%= flash.error %>
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <div class="fw-semibold mb-1">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      Enrollment could not be completed:
+    </div>
+    <ul class="mb-0 ps-3 small">
+      <% flash.error.split(' | ').forEach(function(msg) { %>
+        <li><%= msg %></li>
+      <% }) %>
+    </ul>
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
   </div>
 <% } %>

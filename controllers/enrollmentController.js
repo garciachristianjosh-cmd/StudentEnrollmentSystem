@@ -93,6 +93,23 @@ exports.enroll = async (req, res) => {
 
     subjectIds = subjectIds.map(id => parseInt(id));
 
+    // ── Schedule conflict check ───────────────────────────────
+    const conflicts = await enrollmentModel.checkStudentConflicts(
+      student.id,
+      subjectIds
+    );
+
+    if (conflicts.length > 0) {
+      const messages = conflicts.map(c =>
+        `Schedule conflict: ${c.newSubject} (${c.newSchedule}) ` +
+        `overlaps with ${c.existingSubject} (${c.existSchedule}) ` +
+        `on ${c.sharedDays}.`
+      );
+      // Join all conflict messages into one flash
+      req.flash('error', messages.join(' | '));
+      return res.redirect(`/admin/enrollment/${studentId}`);
+    }
+
     await enrollmentModel.enrollSubjects(student.id, subjectIds);
 
     const count = subjectIds.length;

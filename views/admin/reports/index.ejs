@@ -1,5 +1,5 @@
 <!-- Page Header -->
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="d-flex align-items-center justify-content-between mb-4 no-print">
   <div>
     <h4 class="fw-bold mb-0" style="color:#1e2a3a;">Enrollment Reports</h4>
     <p class="text-muted small mb-0">
@@ -14,8 +14,7 @@
        class="btn btn-outline-success btn-sm">
       <i class="bi bi-filetype-csv me-1"></i>Export CSV
     </a>
-    <button class="btn btn-outline-secondary btn-sm"
-            onclick="window.print()">
+    <button class="btn btn-outline-secondary btn-sm" id="printReportBtn">
       <i class="bi bi-printer me-1"></i>Print
     </button>
   </div>
@@ -23,14 +22,15 @@
 
 <!-- Flash -->
 <% if (flash.error) { %>
-  <div class="alert alert-danger alert-dismissible fade show py-2" role="alert">
+  <div class="alert alert-danger alert-dismissible fade show py-2 no-print"
+       role="alert">
     <i class="bi bi-exclamation-triangle-fill me-2"></i><%= flash.error %>
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
   </div>
 <% } %>
 
-<!-- Summary Cards -->
-<div class="row g-3 mb-4" id="summary-cards">
+<!-- Summary Cards (prints) -->
+<div class="row g-3 mb-4">
   <div class="col-6 col-lg-3">
     <div class="card border-0 shadow-sm rounded-3 text-center p-3">
       <div class="fs-3 fw-bold text-primary"><%= summary.totalStudents %></div>
@@ -51,15 +51,16 @@
   </div>
   <div class="col-6 col-lg-3">
     <div class="card border-0 shadow-sm rounded-3 text-center p-3">
-      <div class="fs-3 fw-bold text-purple"
-           style="color:#9333ea;"><%= summary.totalUnits %></div>
+      <div class="fs-3 fw-bold" style="color:#9333ea;">
+        <%= summary.totalUnits %>
+      </div>
       <div class="text-muted small">Total Units Enrolled</div>
     </div>
   </div>
 </div>
 
-<!-- Filters -->
-<div class="card border-0 shadow-sm rounded-3 mb-3">
+<!-- Filters (no-print) -->
+<div class="card border-0 shadow-sm rounded-3 mb-3 no-print">
   <div class="card-body py-3 px-4">
     <form method="GET" action="/admin/reports">
       <div class="row g-2 align-items-end">
@@ -126,8 +127,25 @@
   </div>
 </div>
 
-<!-- Report Table -->
-<div class="card border-0 shadow-sm rounded-3" id="printable">
+<!-- Print Title (only shows when printing) -->
+<div class="d-none d-print-block mb-3">
+  <h5 class="fw-bold">Enrollment Report</h5>
+  <p class="text-muted small mb-0">
+    Generated: <%= new Date().toLocaleDateString('en-US', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    }) %>
+    <% if (filters.course || filters.year_level || filters.status || filters.search) { %>
+      &nbsp;|&nbsp; Filters:
+      <% if (filters.search)     { %> Search: "<%= filters.search %>" <% } %>
+      <% if (filters.course)     { %> Course: <%= filters.course %> <% } %>
+      <% if (filters.year_level) { %> Year: <%= filters.year_level %> <% } %>
+      <% if (filters.status)     { %> Status: <%= filters.status %> <% } %>
+    <% } %>
+  </p>
+</div>
+
+<!-- Report Table (prints) -->
+<div class="card border-0 shadow-sm rounded-3">
   <div class="card-body p-0">
     <div class="table-responsive">
       <table class="table admin-table mb-0">
@@ -169,9 +187,7 @@
                   </div>
                 </td>
                 <td class="small"><%= r.course %></td>
-                <td class="text-center small">
-                  Year <%= r.year_level %>
-                </td>
+                <td class="text-center small">Year <%= r.year_level %></td>
                 <td>
                   <div class="fw-semibold small"><%= r.subject_code %></div>
                   <div class="text-muted" style="font-size:0.75rem;">
@@ -208,9 +224,9 @@
     </div>
   </div>
 
-  <!-- Pagination -->
+  <!-- Pagination (no-print) -->
   <% if (totalPages > 1) { %>
-    <div class="card-footer bg-white border-0 py-3 px-4">
+    <div class="card-footer bg-white border-0 py-3 px-4 no-print">
       <div class="d-flex align-items-center justify-content-between">
         <span class="text-muted small">
           Page <%= page %> of <%= totalPages %>
@@ -256,21 +272,3 @@
     </div>
   <% } %>
 </div>
-
-<!-- Print styles -->
-<style>
-  @media print {
-    #sidebar,
-    #topnav,
-    #summary-cards,
-    .btn,
-    .card-footer,
-    form {
-      display: none !important;
-    }
-    .page-content { padding: 0 !important; }
-    body { background: #fff !important; }
-    .card { box-shadow: none !important; }
-    .table { font-size: 11px; }
-  }
-</style>

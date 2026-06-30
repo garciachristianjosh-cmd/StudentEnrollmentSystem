@@ -13,7 +13,6 @@ const pageOptions = (req, extra = {}) => ({
 });
 
 // ─── GET /admin/enrollment ────────────────────────────────────
-// Shows a searchable list of all students to pick from
 exports.index = async (req, res) => {
   try {
     const search = (req.query.search || '').trim();
@@ -37,13 +36,12 @@ exports.index = async (req, res) => {
     }));
 
   } catch (err) {
-    console.error(err);
+    console.error('[enrollmentController][index]:', err);
     res.status(500).render('500', { title: 'Error', error: err });
   }
 };
 
 // ─── GET /admin/enrollment/:studentId ─────────────────────────
-// Shows enrolled subjects + available subjects for one student
 exports.manage = async (req, res) => {
   try {
     const student = await studentModel.findById(req.params.studentId);
@@ -58,21 +56,20 @@ exports.manage = async (req, res) => {
     ]);
 
     res.render('layouts/admin-layout', pageOptions(req, {
-      title:     `Enroll — ${student.last_name}, ${student.first_name}`,
-      pageView:  view('manage'),
+      title:    `Enroll — ${student.last_name}, ${student.first_name}`,
+      pageView: view('manage'),
       student,
       enrolled,
       available
     }));
 
   } catch (err) {
-    console.error(err);
+    console.error('[enrollmentController][manage]:', err);
     res.status(500).render('500', { title: 'Error', error: err });
   }
 };
 
 // ─── POST /admin/enrollment/:studentId ────────────────────────
-// Saves selected subjects for the student
 exports.enroll = async (req, res) => {
   const studentId = req.params.studentId;
 
@@ -83,8 +80,6 @@ exports.enroll = async (req, res) => {
       return res.redirect('/admin/enrollment');
     }
 
-    // subjectIds may be a single string or an array depending on
-    // how many checkboxes were checked — normalize to array
     let subjectIds = req.body.subject_ids;
 
     if (!subjectIds) {
@@ -96,7 +91,6 @@ exports.enroll = async (req, res) => {
       subjectIds = [subjectIds];
     }
 
-    // Convert to integers
     subjectIds = subjectIds.map(id => parseInt(id));
 
     await enrollmentModel.enrollSubjects(student.id, subjectIds);
@@ -104,21 +98,20 @@ exports.enroll = async (req, res) => {
     const count = subjectIds.length;
     req.flash(
       'success',
-      `Successfully enrolled ${student.first_name} ${student.last_name} 
-       in ${count} subject${count > 1 ? 's' : ''}.`
+      `Successfully enrolled ${student.first_name} ${student.last_name} ` +
+      `in ${count} subject${count > 1 ? 's' : ''}.`
     );
 
     res.redirect(`/admin/enrollment/${studentId}`);
 
   } catch (err) {
-    console.error(err);
+    console.error('[enrollmentController][enroll]:', err);
     req.flash('error', 'Enrollment failed. Please try again.');
     res.redirect(`/admin/enrollment/${studentId}`);
   }
 };
 
 // ─── POST /admin/enrollment/:studentId/remove/:enrollmentId ───
-// Removes one subject from a student's enrollment
 exports.remove = async (req, res) => {
   const { studentId, enrollmentId } = req.params;
 
@@ -133,7 +126,7 @@ exports.remove = async (req, res) => {
     req.flash('success', 'Subject removed from enrollment.');
 
   } catch (err) {
-    console.error(err);
+    console.error('[enrollmentController][remove]:', err);
     req.flash('error', 'Failed to remove subject.');
   }
 

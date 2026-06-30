@@ -1,11 +1,10 @@
 // controllers/authController.js
-// Add these requires at the top of authController.js
 const crypto             = require('crypto');
 const passwordResetModel = require('../models/passwordResetModel');
-const mailer             = require('../utils/mailer');
-const bcrypt      = require('bcryptjs');
-const userModel   = require('../models/userModel');
-const studentModel = require('../models/studentModel');
+const mailer              = require('../utils/mailer');
+const bcrypt              = require('bcryptjs');
+const userModel           = require('../models/userModel');
+const studentModel        = require('../models/studentModel');
 
 // ─── GET /auth/login ──────────────────────────────────────────
 exports.getLogin = (req, res) => {
@@ -45,24 +44,20 @@ exports.postLogin = async (req, res) => {
       });
     }
 
-    // Store core identity in session
     req.session.user = {
       id:       user.id,
       username: user.username,
       role:     user.role
     };
 
-    // ── Admin: go straight to dashboard ──────────────────────
     if (user.role === 'admin') {
       return res.redirect('/admin/dashboard');
     }
 
-    // ── Student: check must_change_password flag ──────────────
     if (user.role === 'student') {
       const student = await studentModel.findByUserId(user.id);
 
       if (!student) {
-        // User row exists but no student profile — data integrity issue
         req.session.destroy(() => {});
         return res.render('auth/login', {
           title: 'Login',
@@ -70,12 +65,11 @@ exports.postLogin = async (req, res) => {
         });
       }
 
-      // Store student profile details in session for easy access
-      req.session.user.studentId    = student.student_id;
-      req.session.user.firstName    = student.first_name;
-      req.session.user.lastName     = student.last_name;
-      req.session.user.course       = student.course;
-      req.session.user.yearLevel    = student.year_level;
+      req.session.user.studentId          = student.student_id;
+      req.session.user.firstName          = student.first_name;
+      req.session.user.lastName           = student.last_name;
+      req.session.user.course             = student.course;
+      req.session.user.yearLevel          = student.year_level;
       req.session.user.mustChangePassword = student.must_change_password;
 
       if (student.must_change_password) {
@@ -86,7 +80,7 @@ exports.postLogin = async (req, res) => {
     }
 
   } catch (err) {
-    console.error('Login error:', err);
+    console.error('[authController][postLogin]:', err);
     res.render('auth/login', {
       title: 'Login',
       error: 'Something went wrong. Please try again.'
@@ -97,8 +91,8 @@ exports.postLogin = async (req, res) => {
 // ─── GET /auth/change-password ────────────────────────────────
 exports.getChangePassword = (req, res) => {
   res.render('auth/change-password', {
-    title:  'Change Password',
-    error:  null,
+    title:   'Change Password',
+    error:   null,
     success: null
   });
 };
@@ -117,7 +111,6 @@ exports.postChangePassword = async (req, res) => {
   };
 
   try {
-    // ── Validation ────────────────────────────────────────────
     if (!current_password || !new_password || !confirm_password) {
       return renderPage('All fields are required.');
     }
@@ -130,7 +123,6 @@ exports.postChangePassword = async (req, res) => {
       return renderPage('New password must be at least 8 characters.');
     }
 
-    // Enforce at least one letter and one number
     const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
     if (!passwordPattern.test(new_password)) {
       return renderPage(
@@ -138,9 +130,6 @@ exports.postChangePassword = async (req, res) => {
       );
     }
 
-    // ── Verify current password ───────────────────────────────
-    const user = await userModel.findById(userId);
-    // findById doesn't return password — fetch full row here
     const [rows] = await require('../config/database').execute(
       'SELECT password FROM users WHERE id = ?',
       [userId]
@@ -152,7 +141,6 @@ exports.postChangePassword = async (req, res) => {
       return renderPage('Current password is incorrect.');
     }
 
-    // Prevent reusing the same password
     const isSame = await bcrypt.compare(new_password, currentHash);
     if (isSame) {
       return renderPage(
@@ -160,21 +148,16 @@ exports.postChangePassword = async (req, res) => {
       );
     }
 
-    // ── Hash and save ─────────────────────────────────────────
     const newHash = await bcrypt.hash(new_password, 10);
     await userModel.updatePassword(userId, newHash);
-
-    // Clear the forced-change flag in the students table
     await studentModel.clearPasswordChangeFlag(userId);
 
-    // Update the session so middleware knows the flag is cleared
     req.session.user.mustChangePassword = 0;
 
-    // Redirect to dashboard after success
     return res.redirect('/student/dashboard');
 
   } catch (err) {
-    console.error('Change password error:', err);
+    console.error('[authController][postChangePassword]:', err);
     renderPage('Something went wrong. Please try again.');
   }
 };
@@ -182,7 +165,7 @@ exports.postChangePassword = async (req, res) => {
 // ─── GET /auth/logout ─────────────────────────────────────────
 exports.logout = (req, res) => {
   req.session.destroy((err) => {
-    if (err) console.error('Session destroy error:', err);
+    if (err) console.error('[authController][logout]:', err);
     res.clearCookie('connect.sid');
     res.redirect('/auth/login');
   });
@@ -215,8 +198,6 @@ exports.postForgotPassword = async (req, res) => {
       email.trim().toLowerCase()
     );
 
-    // Always show the same success message whether the email
-    // exists or not — prevents email enumeration attacks
     if (!student || !student.is_active) {
       return renderPage(
         null,
@@ -238,7 +219,7 @@ exports.postForgotPassword = async (req, res) => {
     );
 
   } catch (err) {
-    console.error('Forgot password error:', err);
+    console.error('[authController][postForgotPassword]:', err);
     renderPage('Something went wrong. Please try again.');
   }
 };
@@ -267,7 +248,7 @@ exports.getResetPassword = async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Reset password GET error:', err);
+    console.error('[authController][getResetPassword]:', err);
     res.render('auth/reset-password', {
       title:   'Reset Password',
       token:   null,
@@ -288,8 +269,6 @@ exports.postResetPassword = async (req, res) => {
     });
 
   try {
-    // Re-validate the token on POST — the link may have
-    // expired between the GET and POST requests
     const record = await passwordResetModel.findValidToken(token);
 
     if (!record) {
@@ -298,7 +277,6 @@ exports.postResetPassword = async (req, res) => {
       );
     }
 
-    // Validate password
     if (!new_password || !confirm_password) {
       return renderPage('All fields are required.');
     }
@@ -318,14 +296,9 @@ exports.postResetPassword = async (req, res) => {
       );
     }
 
-    // Hash and save the new password
     const hashed = await bcrypt.hash(new_password, 10);
     await userModel.updatePassword(record.user_id, hashed);
-
-    // Also clear the must_change_password flag if it was set
     await studentModel.clearPasswordChangeFlag(record.user_id);
-
-    // Delete the used token immediately
     await passwordResetModel.deleteToken(token);
 
     renderPage(
@@ -334,7 +307,7 @@ exports.postResetPassword = async (req, res) => {
     );
 
   } catch (err) {
-    console.error('Reset password POST error:', err);
+    console.error('[authController][postResetPassword]:', err);
     renderPage('Something went wrong. Please try again.');
   }
 };

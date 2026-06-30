@@ -5,7 +5,6 @@ const path         = require('path');
 
 const ITEMS_PER_PAGE = 10;
 
-// Absolute path helper so EJS include() always finds the file
 const view = (name) =>
   path.join(__dirname, '..', 'views', 'admin', 'students', name + '.ejs');
 
@@ -119,7 +118,7 @@ exports.postCreate = async (req, res) => {
     res.redirect('/admin/students');
 
   } catch (err) {
-    console.error(err);
+    console.error('[studentController][postCreate]:', err);
     res.render('layouts/admin-layout', pageOptions(req, {
       title:    'Add Student',
       pageView: view('create'),
@@ -143,7 +142,7 @@ exports.show = async (req, res) => {
       student
     }));
   } catch (err) {
-    console.error(err);
+    console.error('[studentController][show]:', err);
     res.status(500).render('500', { title: 'Error', error: err });
   }
 };
@@ -164,7 +163,7 @@ exports.getEdit = async (req, res) => {
       old:      student
     }));
   } catch (err) {
-    console.error(err);
+    console.error('[studentController][getEdit]:', err);
     res.status(500).render('500', { title: 'Error', error: err });
   }
 };
@@ -220,7 +219,7 @@ exports.postEdit = async (req, res) => {
     res.redirect(`/admin/students/${id}`);
 
   } catch (err) {
-    console.error(err);
+    console.error('[studentController][postEdit]:', err);
     const student = await studentModel.findById(id);
     res.render('layouts/admin-layout', pageOptions(req, {
       title:    'Edit Student',
@@ -238,7 +237,7 @@ exports.deleteStudent = async (req, res) => {
     await studentModel.delete(req.params.id);
     req.flash('success', 'Student was deleted successfully.');
   } catch (err) {
-    console.error(err);
+    console.error('[studentController][deleteStudent]:', err);
     req.flash('error', 'Failed to delete student.');
   }
   res.redirect('/admin/students');

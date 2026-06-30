@@ -1,7 +1,7 @@
 // controllers/reportController.js
+const path          = require('path');
+const reportModel   = require('../models/reportModel');
 const { escapeCsv } = require('../utils/sanitize');
-const path        = require('path');
-const reportModel = require('../models/reportModel');
 
 const view = (name) =>
   path.join(__dirname, '..', 'views', 'admin', 'reports', name + '.ejs');
@@ -32,7 +32,7 @@ exports.index = async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     res.render('layouts/admin-layout', pageOptions(req, {
-      title:   'Reports',
+      title:    'Reports',
       pageView: view('index'),
       rows,
       total,
@@ -44,7 +44,7 @@ exports.index = async (req, res) => {
     }));
 
   } catch (err) {
-    console.error(err);
+    console.error('[reportController][index]:', err);
     res.status(500).render('500', { title: 'Error', error: err });
   }
 };
@@ -61,7 +61,6 @@ exports.exportCsv = async (req, res) => {
 
     const rows = await reportModel.getAllForExport(filters);
 
-    // Build CSV string
     const headers = [
       'Student ID', 'Last Name', 'First Name', 'Course',
       'Year Level', 'Email', 'Subject Code', 'Subject Name',
@@ -86,18 +85,15 @@ exports.exportCsv = async (req, res) => {
       new Date(r.enrolled_at).toLocaleDateString('en-US')
     ].join(','));
 
-    const csv = [headers.join(','), ...csvRows].join('\n');
-
-    // Tell the browser to download it as a file
+    const csv      = [headers.join(','), ...csvRows].join('\n');
     const filename = `enrollment-report-${Date.now()}.csv`;
+
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader(
-      'Content-Disposition', `attachment; filename="${filename}"`
-    );
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(csv);
 
   } catch (err) {
-    console.error(err);
+    console.error('[reportController][exportCsv]:', err);
     req.flash('error', 'Export failed. Please try again.');
     res.redirect('/admin/reports');
   }

@@ -19,7 +19,7 @@ exports.getDashboard = async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Dashboard error:', err);
+    console.error('[adminController][getDashboard]:', err);
     res.status(500).render('500', { title: 'Server Error', error: err });
   }
 };

@@ -36,7 +36,7 @@ exports.index = async (req, res) => {
     }));
 
   } catch (err) {
-    console.error(err);
+    console.error('[subjectController][index]:', err);
     res.status(500).render('500', { title: 'Error', error: err });
   }
 };
@@ -100,7 +100,7 @@ exports.postCreate = async (req, res) => {
     res.redirect('/admin/subjects');
 
   } catch (err) {
-    console.error(err);
+    console.error('[subjectController][postCreate]:', err);
     res.render('layouts/admin-layout', pageOptions(req, {
       title:    'Add Subject',
       pageView: view('create'),
@@ -128,7 +128,7 @@ exports.getEdit = async (req, res) => {
     }));
 
   } catch (err) {
-    console.error(err);
+    console.error('[subjectController][getEdit]:', err);
     res.status(500).render('500', { title: 'Error', error: err });
   }
 };
@@ -185,7 +185,7 @@ exports.postEdit = async (req, res) => {
     res.redirect('/admin/subjects');
 
   } catch (err) {
-    console.error(err);
+    console.error('[subjectController][postEdit]:', err);
     const subject = await subjectModel.findById(id);
     res.render('layouts/admin-layout', pageOptions(req, {
       title:    'Edit Subject',
@@ -215,7 +215,7 @@ exports.toggleStatus = async (req, res) => {
     );
 
   } catch (err) {
-    console.error(err);
+    console.error('[subjectController][toggleStatus]:', err);
     req.flash('error', 'Failed to update subject status.');
   }
 
@@ -228,8 +228,7 @@ exports.deleteSubject = async (req, res) => {
     await subjectModel.delete(req.params.id);
     req.flash('success', 'Subject was deleted successfully.');
   } catch (err) {
-    console.error(err);
-    // MySQL error 1451 = cannot delete because of FK constraint (enrollments exist)
+    console.error('[subjectController][deleteSubject]:', err);
     if (err.code === 'ER_ROW_IS_REFERENCED_2') {
       req.flash(
         'error',

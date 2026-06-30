@@ -15,9 +15,8 @@ const pageOptions = (req, extra = {}) => ({
 // ─── GET /student/dashboard ───────────────────────────────────
 exports.getDashboard = async (req, res) => {
   try {
-    const student  = await studentModel.findByUserId(req.session.user.id);
-    const enrolled = await enrollmentModel.getStudentSchedule(student.id);
-
+    const student    = await studentModel.findByUserId(req.session.user.id);
+    const enrolled   = await enrollmentModel.getStudentSchedule(student.id);
     const totalUnits = enrolled.reduce((sum, e) => sum + e.units, 0);
 
     res.render('layouts/student-layout', pageOptions(req, {
@@ -30,7 +29,7 @@ exports.getDashboard = async (req, res) => {
     }));
 
   } catch (err) {
-    console.error(err);
+    console.error('[studentDashboardController][getDashboard]:', err);
     res.status(500).render('500', { title: 'Error', error: err });
   }
 };
@@ -38,9 +37,8 @@ exports.getDashboard = async (req, res) => {
 // ─── GET /student/subjects ────────────────────────────────────
 exports.getSubjects = async (req, res) => {
   try {
-    const student  = await studentModel.findByUserId(req.session.user.id);
-    const enrolled = await enrollmentModel.getStudentSchedule(student.id);
-
+    const student    = await studentModel.findByUserId(req.session.user.id);
+    const enrolled   = await enrollmentModel.getStudentSchedule(student.id);
     const totalUnits = enrolled.reduce((sum, e) => sum + e.units, 0);
 
     res.render('layouts/student-layout', pageOptions(req, {
@@ -53,7 +51,7 @@ exports.getSubjects = async (req, res) => {
     }));
 
   } catch (err) {
-    console.error(err);
+    console.error('[studentDashboardController][getSubjects]:', err);
     res.status(500).render('500', { title: 'Error', error: err });
   }
 };
@@ -73,7 +71,7 @@ exports.getSchedule = async (req, res) => {
     }));
 
   } catch (err) {
-    console.error(err);
+    console.error('[studentDashboardController][getSchedule]:', err);
     res.status(500).render('500', { title: 'Error', error: err });
   }
 };

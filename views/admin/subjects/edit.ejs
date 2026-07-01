@@ -1,3 +1,14 @@
+<%
+  let resolvedDays = [];
+  if (old.schedule_days) {
+    if (Array.isArray(old.schedule_days)) {
+      resolvedDays = old.schedule_days;
+    } else {
+      resolvedDays = old.schedule_days.split(',').map(d => d.trim());
+    }
+  }
+%>
+
 <div class="d-flex align-items-center mb-4 gap-3">
   <a href="/admin/subjects" class="btn btn-sm btn-outline-secondary">
     <i class="bi bi-arrow-left"></i>
@@ -24,23 +35,8 @@
   </div>
 <% } %>
 
-<%
-  // schedule_days may be a comma string (from DB) or
-  // an array (from req.body on validation failure)
-  let resolvedDays = [];
-
-  if (old.schedule_days) {
-    if (Array.isArray(old.schedule_days)) {
-      // Came from req.body — already an array of full day names
-      resolvedDays = old.schedule_days;
-    } else {
-      // Came from DB — comma-separated string e.g. "Mon,Wed,Fri"
-      resolvedDays = old.schedule_days.split(',').map(d => d.trim());
-    }
-  }
-%>
-
-<form method="POST" action="/admin/subjects/<%= subject.id %>/edit" novalidate>
+<form method="POST" action="/admin/subjects/<%= subject.id %>/edit"
+      class="needs-validation" novalidate>
   <div class="card border-0 shadow-sm rounded-3 mb-4">
     <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
       <h6 class="fw-bold mb-0">
@@ -59,6 +55,7 @@
                  value="<%= old.subject_code || '' %>"
                  style="text-transform:uppercase;"
                  required />
+          <div class="invalid-feedback">Subject code is required.</div>
         </div>
 
         <div class="col-md-8">
@@ -68,6 +65,7 @@
           <input type="text" name="subject_name" class="form-control"
                  value="<%= old.subject_name || '' %>"
                  required />
+          <div class="invalid-feedback">Subject name is required.</div>
         </div>
 
         <div class="col-md-3">
@@ -82,6 +80,7 @@
               </option>
             <% }) %>
           </select>
+          <div class="invalid-feedback">Units is required.</div>
         </div>
 
         <div class="col-md-4">
@@ -91,6 +90,7 @@
           <input type="text" name="room" class="form-control"
                  value="<%= old.room || '' %>"
                  required />
+          <div class="invalid-feedback">Room is required.</div>
         </div>
 
         <div class="col-md-5">
@@ -147,6 +147,7 @@
                    ? old.schedule_start.substring(0,5)
                    : '' %>"
                  required />
+          <div class="invalid-feedback">Start time is required.</div>
         </div>
         <div class="col-md-4">
           <label class="form-label fw-semibold">
@@ -159,6 +160,7 @@
                    ? old.schedule_end.substring(0,5)
                    : '' %>"
                  required />
+          <div class="invalid-feedback">End time is required.</div>
         </div>
         <div class="col-md-4">
           <label class="form-label fw-semibold">Preview</label>

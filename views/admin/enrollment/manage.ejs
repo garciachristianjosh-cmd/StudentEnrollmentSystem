@@ -37,6 +37,45 @@
   </div>
 <% } %>
 
+<!-- Units Summary Bar -->
+<%
+  const unitPercent  = Math.min(Math.round((currentUnits / maxUnits) * 100), 100);
+  const unitsLeft    = maxUnits - currentUnits;
+  let   barColor     = 'bg-success';
+  if (unitPercent >= 90) barColor = 'bg-danger';
+  else if (unitPercent >= 70) barColor = 'bg-warning';
+%>
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+  <div class="card-body py-3 px-4">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <span class="fw-semibold small">Unit Load</span>
+      <span class="small text-muted">
+        <strong class="text-dark"><%= currentUnits %></strong>
+        / <%= maxUnits %> units
+        <% if (unitsLeft > 0) { %>
+          &nbsp;·&nbsp;
+          <span class="text-success fw-semibold">
+            <%= unitsLeft %> unit<%= unitsLeft !== 1 ? 's' : '' %> remaining
+          </span>
+        <% } else { %>
+          &nbsp;·&nbsp;
+          <span class="text-danger fw-semibold">Maximum reached</span>
+        <% } %>
+      </span>
+    </div>
+    <div class="progress" style="height:8px;">
+      <div class="progress-bar <%= barColor %>"
+           id="unitProgressBar"
+           data-width="<%= unitPercent %>"
+           role="progressbar"
+           aria-valuenow="<%= currentUnits %>"
+           aria-valuemin="0"
+           aria-valuemax="<%= maxUnits %>">
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="row g-4">
 
   <!-- Left: Currently Enrolled -->
@@ -66,7 +105,7 @@
                 <tr>
                   <th class="px-4">Code</th>
                   <th>Subject</th>
-                  <th>Units</th>
+                  <th class="text-center">Units</th>
                   <th class="text-center">Remove</th>
                 </tr>
               </thead>
@@ -84,7 +123,11 @@
                         <%= e.schedule %> | <%= e.room %>
                       </div>
                     </td>
-                    <td class="text-muted small"><%= e.units %></td>
+                    <td class="text-center">
+                      <span class="badge bg-light text-dark border">
+                        <%= e.units %>
+                      </span>
+                    </td>
                     <td class="text-center">
                       <form method="POST"
                             action="/admin/enrollment/<%= student.id %>/remove/<%= e.enrollment_id %>">
@@ -102,15 +145,14 @@
             </table>
           </div>
 
-          <!-- Total Units Summary -->
           <%
             const totalUnits = enrolled.reduce(function(sum, e) {
               return sum + e.units;
             }, 0);
           %>
-          <div class="px-4 py-3 border-top bg-light">
+          <div class="px-4 py-3 border-top bg-light d-flex justify-content-between align-items-center">
             <span class="fw-semibold small">Total Units:</span>
-            <span class="badge bg-primary ms-2"><%= totalUnits %></span>
+            <span class="badge bg-primary"><%= totalUnits %></span>
           </div>
         <% } %>
       </div>
@@ -132,7 +174,15 @@
         </div>
       </div>
 
-      <% if (available.length === 0) { %>
+      <% if (currentUnits >= maxUnits) { %>
+        <div class="card-body text-center text-muted py-5">
+          <i class="bi bi-slash-circle fs-2 d-block mb-2 text-danger"></i>
+          <span class="fw-semibold text-danger">Maximum unit load reached.</span>
+          <div class="small mt-1">
+            Remove a subject before adding new ones.
+          </div>
+        </div>
+      <% } else if (available.length === 0) { %>
         <div class="card-body text-center text-muted py-5">
           <i class="bi bi-check-all fs-2 d-block mb-2 text-success"></i>
           All active subjects are already enrolled.
@@ -150,7 +200,7 @@
                     </th>
                     <th>Code</th>
                     <th>Subject</th>
-                    <th>Units</th>
+                    <th class="text-center">Units</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -160,7 +210,8 @@
                         <input type="checkbox"
                                class="form-check-input subject-checkbox"
                                name="subject_ids"
-                               value="<%= sub.id %>" />
+                               value="<%= sub.id %>"
+                               data-units="<%= sub.units %>" />
                       </td>
                       <td>
                         <span class="badge bg-primary-subtle text-primary fw-semibold">
@@ -173,7 +224,11 @@
                           <%= sub.schedule %> | <%= sub.room %>
                         </div>
                       </td>
-                      <td class="text-muted small"><%= sub.units %></td>
+                      <td class="text-center">
+                        <span class="badge bg-light text-dark border">
+                          <%= sub.units %>
+                        </span>
+                      </td>
                     </tr>
                   <% }) %>
                 </tbody>
@@ -183,9 +238,14 @@
 
           <div class="card-footer bg-white border-0 px-4 py-3">
             <div class="d-flex align-items-center justify-content-between">
-              <span class="text-muted small" id="selectedCount">
-                0 subject(s) selected
-              </span>
+              <div class="small text-muted">
+                <span id="selectedCount">0 selected</span>
+                &nbsp;·&nbsp;
+                <span id="selectedUnits">0 units</span>
+                &nbsp;·&nbsp;
+                After: <span id="projectedUnits"><%= currentUnits %></span>
+                / <%= maxUnits %>
+              </div>
               <button type="submit" class="btn btn-primary px-4"
                       id="enrollBtn" disabled>
                 <i class="bi bi-plus-circle-fill me-2"></i>Enroll Selected
@@ -199,29 +259,64 @@
 
 </div>
 
+<!-- Pass server values to JS via data attributes -->
+<div id="enrollmentMeta"
+     data-current-units="<%= currentUnits %>"
+     data-max-units="<%= maxUnits %>"
+     style="display:none;">
+</div>
+
 <script>
-  const checkboxes   = document.querySelectorAll('.subject-checkbox');
-  const selectAll    = document.getElementById('selectAll');
-  const enrollBtn    = document.getElementById('enrollBtn');
-  const selectedCount = document.getElementById('selectedCount');
+  const meta         = document.getElementById('enrollmentMeta');
+  const progressBar = document.getElementById('unitProgressBar');
+    if (progressBar) {
+      progressBar.style.width = progressBar.getAttribute('data-width') + '%';
+  }
+  const currentUnits = parseInt(meta.getAttribute('data-current-units')) || 0;
+  const maxUnits     = parseInt(meta.getAttribute('data-max-units'))     || 25;
+
+  const checkboxes     = document.querySelectorAll('.subject-checkbox');
+  const selectAll      = document.getElementById('selectAll');
+  const enrollBtn      = document.getElementById('enrollBtn');
+  const selectedCount  = document.getElementById('selectedCount');
+  const selectedUnits  = document.getElementById('selectedUnits');
+  const projectedUnits = document.getElementById('projectedUnits');
 
   function updateState() {
-    const checked = document.querySelectorAll('.subject-checkbox:checked').length;
-    selectedCount.textContent = checked + ' subject(s) selected';
-    enrollBtn.disabled        = checked === 0;
-    selectAll.indeterminate   = checked > 0 && checked < checkboxes.length;
-    selectAll.checked         = checked === checkboxes.length && checkboxes.length > 0;
+    const checked     = Array.from(checkboxes).filter(cb => cb.checked);
+    const count       = checked.length;
+    const units       = checked.reduce((sum, cb) =>
+      sum + parseInt(cb.getAttribute('data-units') || 0), 0
+    );
+    const projected   = currentUnits + units;
+    const wouldExceed = projected > maxUnits;
+
+    if (selectedCount)  selectedCount.textContent  = count + ' selected';
+    if (selectedUnits)  selectedUnits.textContent  = units + ' unit' + (units !== 1 ? 's' : '');
+    if (projectedUnits) projectedUnits.textContent = projected;
+
+    if (projectedUnits) {
+      projectedUnits.className = wouldExceed ? 'text-danger fw-bold' : '';
+    }
+
+    if (enrollBtn) {
+      enrollBtn.disabled  = count === 0 || wouldExceed;
+      enrollBtn.className = wouldExceed
+        ? 'btn btn-danger px-4'
+        : 'btn btn-primary px-4';
+    }
+
+    if (selectAll) {
+      selectAll.indeterminate = count > 0 && count < checkboxes.length;
+      selectAll.checked       = count === checkboxes.length && checkboxes.length > 0;
+    }
   }
 
-  checkboxes.forEach(function(cb) {
-    cb.addEventListener('change', updateState);
-  });
+  checkboxes.forEach(cb => cb.addEventListener('change', updateState));
 
   if (selectAll) {
-    selectAll.addEventListener('change', function() {
-      checkboxes.forEach(function(cb) {
-        cb.checked = selectAll.checked;
-      });
+    selectAll.addEventListener('change', function () {
+      checkboxes.forEach(cb => { cb.checked = selectAll.checked; });
       updateState();
     });
   }

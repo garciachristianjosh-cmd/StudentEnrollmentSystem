@@ -1,6 +1,10 @@
 // models/enrollmentModel.js
 const db = require('../config/database');
 
+// ─── Configurable max units ───────────────────────────────────
+const MAX_UNITS = 25;
+exports.MAX_UNITS = MAX_UNITS;
+
 /**
  * Get all subjects a student is currently enrolled in.
  */
@@ -28,7 +32,6 @@ exports.getByStudent = async (studentId) => {
 
 /**
  * Get all active subjects NOT yet enrolled in by this student.
- * Used to populate the "available subjects" panel.
  */
 exports.getAvailable = async (studentId) => {
   const [rows] = await db.execute(
@@ -47,18 +50,83 @@ exports.getAvailable = async (studentId) => {
 };
 
 /**
+ * Get total enrolled units for a student.
+ */
+exports.getTotalUnits = async (studentId) => {
+  const [[{ total }]] = await db.execute(
+    `SELECT COALESCE(SUM(sub.units), 0) AS total
+     FROM enrollments e
+     JOIN subjects sub ON sub.id = e.subject_id
+     WHERE e.student_id = ?
+       AND e.status = 'enrolled'`,
+    [studentId]
+  );
+  return parseInt(total);
+};
+
+/**
+ * Check which of the given subject IDs are already enrolled
+ * by the student. Returns array of duplicate subject IDs.
+ */
+exports.findDuplicates = async (studentId, subjectIds) => {
+  if (!subjectIds || subjectIds.length === 0) return [];
+
+  const placeholders = subjectIds.map(() => '?').join(',');
+  const [rows] = await db.execute(
+    `SELECT subject_id
+     FROM enrollments
+     WHERE student_id  = ?
+       AND subject_id IN (${placeholders})`,
+    [studentId, ...subjectIds]
+  );
+  return rows.map(r => r.subject_id);
+};
+
+/**
+ * Check which of the given subject IDs are inactive.
+ * Returns array of inactive subject objects.
+ */
+exports.findInactive = async (subjectIds) => {
+  if (!subjectIds || subjectIds.length === 0) return [];
+
+  const placeholders = subjectIds.map(() => '?').join(',');
+  const [rows] = await db.execute(
+    `SELECT id, subject_code, subject_name
+     FROM subjects
+     WHERE id IN (${placeholders})
+       AND is_active = 0`,
+    subjectIds
+  );
+  return rows;
+};
+
+/**
+ * Get units for the given subject IDs.
+ * Used to check if adding these subjects would exceed the max.
+ */
+exports.getUnitsForSubjects = async (subjectIds) => {
+  if (!subjectIds || subjectIds.length === 0) return 0;
+
+  const placeholders = subjectIds.map(() => '?').join(',');
+  const [[{ total }]] = await db.execute(
+    `SELECT COALESCE(SUM(units), 0) AS total
+     FROM subjects
+     WHERE id IN (${placeholders})`,
+    subjectIds
+  );
+  return parseInt(total);
+};
+
+/**
  * Enroll a student in multiple subjects.
- * Skips duplicates safely using INSERT IGNORE.
+ * Uses INSERT IGNORE as final safety net against duplicates.
  */
 exports.enrollSubjects = async (studentId, subjectIds) => {
   if (!subjectIds || subjectIds.length === 0) return;
 
-  // Build placeholders: (?,?), (?,?), ...
   const placeholders = subjectIds.map(() => '(?, ?)').join(', ');
   const values       = subjectIds.flatMap(sid => [studentId, sid]);
 
-  // INSERT IGNORE silently skips rows that violate the UNIQUE constraint
-  // This is our second line of defense after the app-level duplicate check
   await db.execute(
     `INSERT IGNORE INTO enrollments (student_id, subject_id)
      VALUES ${placeholders}`,
@@ -70,9 +138,6 @@ exports.enrollSubjects = async (studentId, subjectIds) => {
  * Remove a single enrollment record.
  */
 exports.remove = async (enrollmentId, studentId) => {
-  // Include studentId in WHERE clause as a safety check —
-  // prevents one student's enrollment from being deleted
-  // via a manipulated URL belonging to another student
   await db.execute(
     'DELETE FROM enrollments WHERE id = ? AND student_id = ?',
     [enrollmentId, studentId]
@@ -121,13 +186,10 @@ exports.getStudentSchedule = async (studentId) => {
 /**
  * Check if a student's existing enrollments conflict with
  * any of the subjects being added.
- *
- * Returns an array of conflict objects describing each clash.
  */
 exports.checkStudentConflicts = async (studentId, subjectIds) => {
   if (!subjectIds || subjectIds.length === 0) return [];
 
-  // Get the student's currently enrolled subjects with schedule data
   const [enrolled] = await db.execute(
     `SELECT
        sub.id,
@@ -146,7 +208,6 @@ exports.checkStudentConflicts = async (studentId, subjectIds) => {
     [studentId]
   );
 
-  // Get the subjects being added with schedule data
   const placeholders = subjectIds.map(() => '?').join(',');
   const [incoming] = await db.execute(
     `SELECT
@@ -166,7 +227,6 @@ exports.checkStudentConflicts = async (studentId, subjectIds) => {
 
   const conflicts = [];
 
-  // Check every incoming subject against every enrolled subject
   for (const newSub of incoming) {
     if (!newSub.schedule_days) continue;
 
@@ -181,11 +241,9 @@ exports.checkStudentConflicts = async (studentId, subjectIds) => {
       const existStart = existing.schedule_start;
       const existEnd   = existing.schedule_end;
 
-      // Check shared days
-      const sharedDays = newDays.filter(d => existDays.includes(d));
+      const sharedDays   = newDays.filter(d => existDays.includes(d));
       if (sharedDays.length === 0) continue;
 
-      // Check time overlap: start1 < end2 AND start2 < end1
       const timesOverlap = newStart < existEnd && existStart < newEnd;
       if (!timesOverlap) continue;
 
@@ -198,22 +256,20 @@ exports.checkStudentConflicts = async (studentId, subjectIds) => {
       });
     }
 
-    // Also check conflicts between the incoming subjects themselves
     for (const otherNew of incoming) {
-      if (otherNew.id === newSub.id)   continue;
-      if (!otherNew.schedule_days)     continue;
+      if (otherNew.id === newSub.id) continue;
+      if (!otherNew.schedule_days)   continue;
 
       const otherDays  = otherNew.schedule_days.split(',').map(d => d.trim());
       const otherStart = otherNew.schedule_start;
       const otherEnd   = otherNew.schedule_end;
 
-      const sharedDays = newDays.filter(d => otherDays.includes(d));
+      const sharedDays   = newDays.filter(d => otherDays.includes(d));
       if (sharedDays.length === 0) continue;
 
       const timesOverlap = newStart < otherEnd && otherStart < newEnd;
       if (!timesOverlap) continue;
 
-      // Avoid adding the same conflict twice (A vs B and B vs A)
       const alreadyAdded = conflicts.some(c =>
         c.newSubject      === `${otherNew.subject_code} — ${otherNew.subject_name}` &&
         c.existingSubject === `${newSub.subject_code} — ${newSub.subject_name}`

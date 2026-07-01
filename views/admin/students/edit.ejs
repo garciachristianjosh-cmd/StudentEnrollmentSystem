@@ -6,7 +6,8 @@
   <div>
     <h4 class="fw-bold mb-0" style="color:#1e2a3a;">Edit Student</h4>
     <p class="text-muted small mb-0">
-      <%= student.student_id %> — <%= student.last_name %>, <%= student.first_name %>
+      <%= student.student_id %> —
+      <%= student.last_name %>, <%= student.first_name %>
     </p>
   </div>
 </div>
@@ -25,7 +26,8 @@
   </div>
 <% } %>
 
-<form method="POST" action="/admin/students/<%= student.id %>/edit" novalidate>
+<form method="POST" action="/admin/students/<%= student.id %>/edit"
+      class="needs-validation" novalidate>
   <div class="card border-0 shadow-sm rounded-3 mb-4">
     <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
       <h6 class="fw-bold mb-0">
@@ -42,6 +44,7 @@
           </label>
           <input type="text" name="first_name" class="form-control"
                  value="<%= old.first_name || '' %>" required />
+          <div class="invalid-feedback">First name is required.</div>
         </div>
 
         <div class="col-md-4">
@@ -56,6 +59,7 @@
           </label>
           <input type="text" name="last_name" class="form-control"
                  value="<%= old.last_name || '' %>" required />
+          <div class="invalid-feedback">Last name is required.</div>
         </div>
 
         <div class="col-md-6">
@@ -64,12 +68,19 @@
           </label>
           <input type="email" name="email" class="form-control"
                  value="<%= old.email || '' %>" required />
+          <div class="invalid-feedback">
+            Please enter a valid email address.
+          </div>
         </div>
 
         <div class="col-md-6">
           <label class="form-label fw-semibold">Contact Number</label>
           <input type="text" name="contact_number" class="form-control"
-                 value="<%= old.contact_number || '' %>" />
+                 value="<%= old.contact_number || '' %>"
+                 pattern="^[0-9+\-\s]{7,15}$" />
+          <div class="invalid-feedback">
+            Please enter a valid contact number.
+          </div>
         </div>
 
         <div class="col-md-8">
@@ -78,6 +89,7 @@
           </label>
           <input type="text" name="course" class="form-control"
                  value="<%= old.course || '' %>" required />
+          <div class="invalid-feedback">Course is required.</div>
         </div>
 
         <div class="col-md-4">
@@ -92,6 +104,7 @@
               </option>
             <% }) %>
           </select>
+          <div class="invalid-feedback">Year level is required.</div>
         </div>
 
       </div>

@@ -1,10 +1,6 @@
 // models/reportModel.js
 const db = require('../config/database');
 
-/**
- * Fetch enrollment records with optional filters.
- * All parameters are optional — omitting them returns everything.
- */
 exports.getEnrollmentReport = async ({
   search     = '',
   course     = '',
@@ -16,26 +12,14 @@ exports.getEnrollmentReport = async ({
   const offset = (page - 1) * limit;
   const like   = `%${search}%`;
 
-  // Build dynamic WHERE clauses
   const conditions = [
     '(s.student_id LIKE ? OR s.first_name LIKE ? OR s.last_name LIKE ?)'
   ];
   const params = [like, like, like];
 
-  if (course) {
-    conditions.push('s.course = ?');
-    params.push(course);
-  }
-
-  if (year_level) {
-    conditions.push('s.year_level = ?');
-    params.push(year_level);
-  }
-
-  if (status) {
-    conditions.push('e.status = ?');
-    params.push(status);
-  }
+  if (course)     { conditions.push('s.course = ?');     params.push(course); }
+  if (year_level) { conditions.push('s.year_level = ?'); params.push(year_level); }
+  if (status)     { conditions.push('e.status = ?');     params.push(status); }
 
   const where = 'WHERE ' + conditions.join(' AND ');
 
@@ -76,9 +60,6 @@ exports.getEnrollmentReport = async ({
   return { rows, total };
 };
 
-/**
- * Summary counts shown at the top of the report page.
- */
 exports.getReportSummary = async () => {
   const [
     [totalStudents],
@@ -115,8 +96,49 @@ exports.getReportSummary = async () => {
 };
 
 /**
- * Fetch ALL enrollment records (no pagination) for CSV export.
+ * Per-student summary — total subjects and units per student.
+ * Used by the summary tab in reports.
  */
+exports.getStudentSummary = async ({
+  search     = '',
+  course     = '',
+  year_level = ''
+} = {}) => {
+  const like   = `%${search}%`;
+
+  const conditions = [
+    '(s.student_id LIKE ? OR s.first_name LIKE ? OR s.last_name LIKE ?)'
+  ];
+  const params = [like, like, like];
+
+  if (course)     { conditions.push('s.course = ?');     params.push(course); }
+  if (year_level) { conditions.push('s.year_level = ?'); params.push(year_level); }
+
+  const where = 'WHERE ' + conditions.join(' AND ');
+
+  const [rows] = await db.execute(
+    `SELECT
+       s.student_id,
+       s.first_name,
+       s.last_name,
+       s.course,
+       s.year_level,
+       s.email,
+       COUNT(e.id)                  AS subject_count,
+       COALESCE(SUM(sub.units), 0)  AS total_units
+     FROM students s
+     LEFT JOIN enrollments e  ON e.student_id = s.id
+                              AND e.status = 'enrolled'
+     LEFT JOIN subjects sub   ON sub.id = e.subject_id
+     ${where}
+     GROUP BY s.id
+     ORDER BY s.last_name, s.first_name`,
+    params
+  );
+
+  return rows;
+};
+
 exports.getAllForExport = async ({
   search     = '',
   course     = '',

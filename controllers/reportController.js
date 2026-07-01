@@ -21,26 +21,30 @@ exports.index = async (req, res) => {
       year_level: (req.query.year_level || '').trim(),
       status:     (req.query.status     || '').trim()
     };
-    const page  = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = 15;
+    const page     = Math.max(1, parseInt(req.query.page) || 1);
+    const limit    = 15;
+    const activeTab = req.query.tab || 'enrollments';
 
-    const [{ rows, total }, summary] = await Promise.all([
+    const [{ rows, total }, summary, studentSummary] = await Promise.all([
       reportModel.getEnrollmentReport({ ...filters, page, limit }),
-      reportModel.getReportSummary()
+      reportModel.getReportSummary(),
+      reportModel.getStudentSummary(filters)
     ]);
 
     const totalPages = Math.ceil(total / limit);
 
     res.render('layouts/admin-layout', pageOptions(req, {
-      title:    'Reports',
-      pageView: view('index'),
+      title:         'Reports',
+      pageView:      view('index'),
       rows,
       total,
       summary,
+      studentSummary,
       filters,
       page,
       totalPages,
-      limit
+      limit,
+      activeTab
     }));
 
   } catch (err) {

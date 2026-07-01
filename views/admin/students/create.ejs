@@ -24,7 +24,8 @@
   </div>
 <% } %>
 
-<form method="POST" action="/admin/students/create" novalidate>
+<form method="POST" action="/admin/students/create"
+      class="needs-validation" novalidate>
   <div class="row g-4">
 
     <!-- Left column -->
@@ -48,6 +49,7 @@
               <input type="text" name="first_name" class="form-control"
                      value="<%= old.first_name || '' %>"
                      placeholder="Juan" required />
+              <div class="invalid-feedback">First name is required.</div>
             </div>
 
             <div class="col-md-4">
@@ -64,6 +66,7 @@
               <input type="text" name="last_name" class="form-control"
                      value="<%= old.last_name || '' %>"
                      placeholder="dela Cruz" required />
+              <div class="invalid-feedback">Last name is required.</div>
             </div>
 
             <div class="col-md-6">
@@ -73,13 +76,20 @@
               <input type="email" name="email" class="form-control"
                      value="<%= old.email || '' %>"
                      placeholder="juan@example.com" required />
+              <div class="invalid-feedback">
+                Please enter a valid email address.
+              </div>
             </div>
 
             <div class="col-md-6">
               <label class="form-label fw-semibold">Contact Number</label>
               <input type="text" name="contact_number" class="form-control"
                      value="<%= old.contact_number || '' %>"
-                     placeholder="09XXXXXXXXX" />
+                     placeholder="09XXXXXXXXX"
+                     pattern="^[0-9+\-\s]{7,15}$" />
+              <div class="invalid-feedback">
+                Please enter a valid contact number.
+              </div>
             </div>
 
           </div>
@@ -104,6 +114,7 @@
               <input type="text" name="student_id" class="form-control"
                      value="<%= old.student_id || '' %>"
                      placeholder="2024-0001" required />
+              <div class="invalid-feedback">Student ID is required.</div>
             </div>
 
             <div class="col-md-6">
@@ -113,6 +124,7 @@
               <input type="text" name="course" class="form-control"
                      value="<%= old.course || '' %>"
                      placeholder="BS Computer Science" required />
+              <div class="invalid-feedback">Course is required.</div>
             </div>
 
             <div class="col-md-4">
@@ -128,6 +140,7 @@
                   </option>
                 <% }) %>
               </select>
+              <div class="invalid-feedback">Year level is required.</div>
             </div>
 
           </div>
@@ -153,7 +166,12 @@
             </label>
             <input type="text" name="username" class="form-control"
                    value="<%= old.username || '' %>"
-                   placeholder="student01" required />
+                   placeholder="student01"
+                   minlength="3"
+                   required />
+            <div class="invalid-feedback">
+              Username is required (min. 3 characters).
+            </div>
           </div>
 
           <div class="mb-3">
@@ -162,15 +180,18 @@
             </label>
             <input type="text" name="password" class="form-control"
                    value="<%= old.password || '' %>"
-                   placeholder="Min. 6 characters" required />
-            <div class="form-text">
-              The student must change this on first login.
+                   placeholder="Min. 6 characters"
+                   minlength="6"
+                   required />
+            <div class="invalid-feedback">
+              Password is required (min. 6 characters).
             </div>
           </div>
 
           <div class="alert alert-info py-2 small">
             <i class="bi bi-info-circle-fill me-1"></i>
-            Share the username and temporary password with the student securely.
+            Share credentials securely. Student must change
+            password on first login.
           </div>
         </div>
       </div>
@@ -182,6 +203,8 @@
     <button type="submit" class="btn btn-primary px-4">
       <i class="bi bi-person-plus-fill me-2"></i>Create Student
     </button>
-    <a href="/admin/students" class="btn btn-outline-secondary px-4">Cancel</a>
+    <a href="/admin/students" class="btn btn-outline-secondary px-4">
+      Cancel
+    </a>
   </div>
 </form>

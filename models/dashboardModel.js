@@ -1,17 +1,13 @@
 // models/dashboardModel.js
 const db = require('../config/database');
 
-/**
- * Returns counts for the four summary cards.
- * Using Promise.all runs all four queries in parallel — faster
- * than awaiting them one at a time.
- */
 exports.getSummary = async () => {
   const [
     [totalStudents],
     [totalSubjects],
     [totalEnrollments],
-    [activeEnrollments]
+    [activeEnrollments],
+    [totalUnits]
   ] = await Promise.all([
     db.execute('SELECT COUNT(*) AS count FROM students'),
     db.execute(
@@ -19,8 +15,13 @@ exports.getSummary = async () => {
     ),
     db.execute('SELECT COUNT(*) AS count FROM enrollments'),
     db.execute(
-      `SELECT COUNT(*) AS count FROM enrollments
-       WHERE status = 'enrolled'`
+      "SELECT COUNT(*) AS count FROM enrollments WHERE status = 'enrolled'"
+    ),
+    db.execute(
+      `SELECT COALESCE(SUM(sub.units), 0) AS count
+       FROM enrollments e
+       JOIN subjects sub ON sub.id = e.subject_id
+       WHERE e.status = 'enrolled'`
     )
   ]);
 
@@ -28,14 +29,11 @@ exports.getSummary = async () => {
     totalStudents:     totalStudents[0].count,
     totalSubjects:     totalSubjects[0].count,
     totalEnrollments:  totalEnrollments[0].count,
-    activeEnrollments: activeEnrollments[0].count
+    activeEnrollments: activeEnrollments[0].count,
+    totalUnits:        totalUnits[0].count
   };
 };
 
-/**
- * Returns the 5 most recently enrolled students for the
- * "Recent Activity" table on the dashboard.
- */
 exports.getRecentEnrollments = async () => {
   const [rows] = await db.execute(
     `SELECT
@@ -49,10 +47,31 @@ exports.getRecentEnrollments = async () => {
        e.enrolled_at,
        e.status
      FROM enrollments e
-     JOIN students s  ON s.id  = e.student_id
+     JOIN students s   ON s.id   = e.student_id
      JOIN subjects sub ON sub.id = e.subject_id
      ORDER BY e.enrolled_at DESC
      LIMIT 5`
+  );
+  return rows;
+};
+
+/**
+ * Enrollment count grouped by course.
+ * Powers the breakdown table on the dashboard.
+ */
+exports.getCourseBreakdown = async () => {
+  const [rows] = await db.execute(
+    `SELECT
+       s.course,
+       COUNT(DISTINCT s.id)  AS student_count,
+       COUNT(e.id)           AS enrollment_count,
+       COALESCE(SUM(sub.units), 0) AS total_units
+     FROM students s
+     LEFT JOIN enrollments e  ON e.student_id = s.id
+                              AND e.status = 'enrolled'
+     LEFT JOIN subjects sub   ON sub.id = e.subject_id
+     GROUP BY s.course
+     ORDER BY student_count DESC`
   );
   return rows;
 };

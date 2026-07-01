@@ -50,17 +50,20 @@ exports.manage = async (req, res) => {
       return res.redirect('/admin/enrollment');
     }
 
-    const [enrolled, available] = await Promise.all([
+    const [enrolled, available, currentUnits] = await Promise.all([
       enrollmentModel.getByStudent(student.id),
-      enrollmentModel.getAvailable(student.id)
+      enrollmentModel.getAvailable(student.id),
+      enrollmentModel.getTotalUnits(student.id)
     ]);
 
     res.render('layouts/admin-layout', pageOptions(req, {
-      title:    `Enroll — ${student.last_name}, ${student.first_name}`,
-      pageView: view('manage'),
+      title:        `Enroll — ${student.last_name}, ${student.first_name}`,
+      pageView:     view('manage'),
       student,
       enrolled,
-      available
+      available,
+      currentUnits,
+      maxUnits:     enrollmentModel.MAX_UNITS
     }));
 
   } catch (err) {
@@ -93,7 +96,66 @@ exports.enroll = async (req, res) => {
 
     subjectIds = subjectIds.map(id => parseInt(id));
 
-    // ── Schedule conflict check ───────────────────────────────
+    // ── 1. Inactive subject check ─────────────────────────────
+    const inactiveSubjects = await enrollmentModel.findInactive(subjectIds);
+    if (inactiveSubjects.length > 0) {
+      const names = inactiveSubjects
+        .map(s => s.subject_code)
+        .join(', ');
+      req.flash(
+        'error',
+        `Cannot enroll in inactive subject(s): ${names}. ` +
+        `Please ask the administrator to activate them first.`
+      );
+      return res.redirect(`/admin/enrollment/${studentId}`);
+    }
+
+    // ── 2. Duplicate enrollment check ────────────────────────
+    const duplicates = await enrollmentModel.findDuplicates(
+      student.id,
+      subjectIds
+    );
+    if (duplicates.length > 0) {
+      // Remove duplicates from the list instead of rejecting entirely
+      subjectIds = subjectIds.filter(id => !duplicates.includes(id));
+
+      if (subjectIds.length === 0) {
+        req.flash(
+          'error',
+          'All selected subjects are already enrolled. ' +
+          'No changes were made.'
+        );
+        return res.redirect(`/admin/enrollment/${studentId}`);
+      }
+
+      // Continue with the remaining non-duplicate subjects
+      req.flash(
+        'success',
+        `Note: Some subjects were already enrolled and were skipped.`
+      );
+    }
+
+    // ── 3. Max units check ────────────────────────────────────
+    const [currentUnits, incomingUnits] = await Promise.all([
+      enrollmentModel.getTotalUnits(student.id),
+      enrollmentModel.getUnitsForSubjects(subjectIds)
+    ]);
+
+    const projectedUnits = currentUnits + incomingUnits;
+
+    if (projectedUnits > enrollmentModel.MAX_UNITS) {
+      req.flash(
+        'error',
+        `Cannot enroll: adding these subjects would bring the total to ` +
+        `${projectedUnits} units, which exceeds the maximum of ` +
+        `${enrollmentModel.MAX_UNITS} units. ` +
+        `Current units: ${currentUnits}. ` +
+        `Selected subjects: ${incomingUnits} units.`
+      );
+      return res.redirect(`/admin/enrollment/${studentId}`);
+    }
+
+    // ── 4. Schedule conflict check ────────────────────────────
     const conflicts = await enrollmentModel.checkStudentConflicts(
       student.id,
       subjectIds
@@ -101,22 +163,22 @@ exports.enroll = async (req, res) => {
 
     if (conflicts.length > 0) {
       const messages = conflicts.map(c =>
-        `Schedule conflict: ${c.newSubject} (${c.newSchedule}) ` +
-        `overlaps with ${c.existingSubject} (${c.existSchedule}) ` +
-        `on ${c.sharedDays}.`
+        `${c.newSubject} (${c.newSchedule}) conflicts with ` +
+        `${c.existingSubject} (${c.existSchedule}) on ${c.sharedDays}.`
       );
-      // Join all conflict messages into one flash
       req.flash('error', messages.join(' | '));
       return res.redirect(`/admin/enrollment/${studentId}`);
     }
 
+    // ── 5. All checks passed — enroll ─────────────────────────
     await enrollmentModel.enrollSubjects(student.id, subjectIds);
 
     const count = subjectIds.length;
     req.flash(
       'success',
       `Successfully enrolled ${student.first_name} ${student.last_name} ` +
-      `in ${count} subject${count > 1 ? 's' : ''}.`
+      `in ${count} subject${count > 1 ? 's' : ''} ` +
+      `(${incomingUnits} unit${incomingUnits !== 1 ? 's' : ''}).`
     );
 
     res.redirect(`/admin/enrollment/${studentId}`);

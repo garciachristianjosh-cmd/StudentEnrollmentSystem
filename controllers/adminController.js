@@ -4,18 +4,20 @@ const dashboardModel = require('../models/dashboardModel');
 
 exports.getDashboard = async (req, res) => {
   try {
-    const [summary, recentEnrollments] = await Promise.all([
+    const [summary, recentEnrollments, courseBreakdown] = await Promise.all([
       dashboardModel.getSummary(),
-      dashboardModel.getRecentEnrollments()
+      dashboardModel.getRecentEnrollments(),
+      dashboardModel.getCourseBreakdown()
     ]);
 
     res.render('layouts/admin-layout', {
-      title:             'Dashboard',
-      user:              req.session.user,
-      activePage:        'dashboard',
-      pageView:          path.join(__dirname, '..', 'views', 'admin', 'dashboard.ejs'),
+      title:            'Dashboard',
+      user:             req.session.user,
+      activePage:       'dashboard',
+      pageView:         path.join(__dirname, '..', 'views', 'admin', 'dashboard.ejs'),
       summary,
-      recentEnrollments
+      recentEnrollments,
+      courseBreakdown
     });
 
   } catch (err) {

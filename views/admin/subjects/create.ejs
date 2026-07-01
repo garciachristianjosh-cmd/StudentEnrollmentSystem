@@ -22,7 +22,8 @@
   </div>
 <% } %>
 
-<form method="POST" action="/admin/subjects/create" novalidate>
+<form method="POST" action="/admin/subjects/create"
+      class="needs-validation" novalidate>
   <div class="row g-4">
 
     <!-- Main Details -->
@@ -46,6 +47,7 @@
                      placeholder="CS101"
                      style="text-transform:uppercase;"
                      required />
+              <div class="invalid-feedback">Subject code is required.</div>
               <div class="form-text">Will be saved in uppercase.</div>
             </div>
 
@@ -57,6 +59,7 @@
                      value="<%= old.subject_name || '' %>"
                      placeholder="Introduction to Computing"
                      required />
+              <div class="invalid-feedback">Subject name is required.</div>
             </div>
 
             <div class="col-md-3">
@@ -72,6 +75,7 @@
                   </option>
                 <% }) %>
               </select>
+              <div class="invalid-feedback">Units is required.</div>
             </div>
 
             <div class="col-md-4">
@@ -82,6 +86,7 @@
                      value="<%= old.room || '' %>"
                      placeholder="Room 101"
                      required />
+              <div class="invalid-feedback">Room is required.</div>
             </div>
 
             <div class="col-md-5">
@@ -116,9 +121,7 @@
                        type="checkbox"
                        name="schedule_days"
                        id="day_<%= day %>"
-                       value="<%= day %>"
-                       <%= (old.schedule_days && old.schedule_days.includes
-                         ? '' : '') %> />
+                       value="<%= day %>" />
                 <label class="form-check-label fw-semibold"
                        for="day_<%= day %>">
                   <%= day %>
@@ -138,6 +141,7 @@
                      class="form-control"
                      value="<%= old.schedule_start || '' %>"
                      required />
+              <div class="invalid-feedback">Start time is required.</div>
             </div>
             <div class="col-md-4">
               <label class="form-label fw-semibold">
@@ -148,6 +152,7 @@
                      class="form-control"
                      value="<%= old.schedule_end || '' %>"
                      required />
+              <div class="invalid-feedback">End time is required.</div>
             </div>
             <div class="col-md-4">
               <label class="form-label fw-semibold">Preview</label>

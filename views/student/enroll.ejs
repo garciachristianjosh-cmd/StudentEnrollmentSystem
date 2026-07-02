@@ -1,0 +1,158 @@
+<div class="mb-4">
+  <h4 class="fw-bold mb-0" style="color:#1e2a3a;">Enroll in Subjects</h4>
+  <% if (semester) { %>
+    <p class="text-muted small mb-0">
+      <i class="bi bi-calendar3 me-1"></i>
+      <%= semester.school_year %> · <%= semester.semester %> Semester
+    </p>
+  <% } else { %>
+    <p class="text-muted small mb-0">No active semester set.</p>
+  <% } %>
+</div>
+
+<% if (flash.success) { %>
+  <div class="alert alert-success alert-dismissible fade show py-2">
+    <i class="bi bi-check-circle-fill me-2"></i><%= flash.success %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+<% if (flash.error) { %>
+  <div class="alert alert-danger alert-dismissible fade show">
+    <div class="fw-semibold mb-1">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      Could not submit enrollment:
+    </div>
+    <ul class="mb-0 ps-3 small">
+      <% flash.error.split(' | ').forEach(function(msg) { %>
+        <li><%= msg %></li>
+      <% }) %>
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+
+<% if (!semester) { %>
+  <div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    No active semester. Please contact your administrator.
+  </div>
+<% } else if (available.length === 0) { %>
+  <div class="card border-0 shadow-sm rounded-3">
+    <div class="card-body text-center text-muted py-5">
+      <i class="bi bi-check-all fs-2 d-block mb-2 text-success"></i>
+      All available subjects are already in your enrollment list.
+      <div class="mt-2">
+        <a href="/student/requests" class="btn btn-sm btn-outline-primary">
+          View My Requests
+        </a>
+      </div>
+    </div>
+  </div>
+<% } else { %>
+
+  <!-- Unit Load Bar -->
+  <div class="card border-0 shadow-sm rounded-3 mb-4">
+    <div class="card-body py-3 px-4">
+      <div class="d-flex justify-content-between mb-2 small">
+        <span class="fw-semibold">Current Unit Load</span>
+        <span class="text-muted">
+          <strong><%= currentUnits %></strong> / <%= maxUnits %> units
+        </span>
+      </div>
+      <div class="progress" style="height:8px;">
+        <div id="unitProgressBar"
+             class="progress-bar bg-success"
+             data-width="<%= Math.min(Math.round((currentUnits / maxUnits) * 100), 100) %>">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden meta for JS -->
+  <div id="enrollmentMeta"
+       data-current-units="<%= currentUnits %>"
+       data-max-units="<%= maxUnits %>"
+       style="display:none;"></div>
+
+  <form method="POST" action="/student/enroll">
+    <div class="card border-0 shadow-sm rounded-3">
+      <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+        <div class="d-flex align-items-center justify-content-between">
+          <h6 class="fw-bold mb-0">Available Subjects</h6>
+          <span class="badge bg-primary-subtle text-primary">
+            <%= available.length %> available
+          </span>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="table student-table mb-0">
+          <thead>
+            <tr>
+              <th class="px-4" style="width:40px;">
+                <input type="checkbox" id="selectAll"
+                       class="form-check-input" />
+              </th>
+              <th>Code</th>
+              <th>Subject</th>
+              <th class="text-center">Units</th>
+              <th>Schedule</th>
+              <th>Room</th>
+              <th>Instructor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% available.forEach(function(sub) { %>
+              <tr>
+                <td class="px-4">
+                  <input type="checkbox"
+                         class="form-check-input subject-checkbox"
+                         name="subject_ids"
+                         value="<%= sub.id %>"
+                         data-units="<%= sub.units %>" />
+                </td>
+                <td>
+                  <span class="badge bg-primary-subtle text-primary fw-semibold">
+                    <%= sub.subject_code %>
+                  </span>
+                </td>
+                <td class="fw-semibold small"><%= sub.subject_name %></td>
+                <td class="text-center">
+                  <span class="badge bg-light text-dark border">
+                    <%= sub.units %>
+                  </span>
+                </td>
+                <td class="text-muted small"><%= sub.schedule %></td>
+                <td class="text-muted small"><%= sub.room %></td>
+                <td class="text-muted small"><%= sub.instructor || '—' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card-footer bg-white border-0 px-4 py-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="small text-muted">
+            <span id="selectedCount">0 selected</span>
+            &nbsp;·&nbsp;
+            <span id="selectedUnits">0 units</span>
+            &nbsp;·&nbsp;
+            After: <span id="projectedUnits"><%= currentUnits %></span>
+            / <%= maxUnits %>
+          </div>
+          <div class="d-flex gap-2">
+            <a href="/student/requests"
+               class="btn btn-outline-secondary btn-sm">
+              View Requests
+            </a>
+            <button type="submit" class="btn btn-primary px-4"
+                    id="enrollBtn">
+              <i class="bi bi-send-fill me-2"></i>Submit for Approval
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+<% } %>

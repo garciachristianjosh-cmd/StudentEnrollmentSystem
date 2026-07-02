@@ -1,0 +1,164 @@
+<div class="d-flex align-items-center mb-4 gap-3">
+  <a href="/admin/applicants" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <div class="flex-grow-1">
+    <h4 class="fw-bold mb-0" style="color:#1e2a3a;">
+      <%= applicant.last_name %>, <%= applicant.first_name %>
+      <%= applicant.middle_name ? applicant.middle_name : '' %>
+    </h4>
+    <% if (applicant.status === 'Pending') { %>
+      <span class="badge bg-warning-subtle text-warning">Pending</span>
+    <% } else if (applicant.status === 'Approved') { %>
+      <span class="badge bg-success-subtle text-success">Approved</span>
+    <% } else { %>
+      <span class="badge bg-danger-subtle text-danger">Rejected</span>
+    <% } %>
+  </div>
+</div>
+
+<% if (flash.success) { %>
+  <div class="alert alert-success alert-dismissible fade show">
+    <i class="bi bi-check-circle-fill me-2"></i><%= flash.success %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+<% if (flash.error) { %>
+  <div class="alert alert-danger alert-dismissible fade show py-2">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i><%= flash.error %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+
+<div class="row g-4">
+
+  <!-- Details -->
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+      <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+        <h6 class="fw-bold mb-0">
+          <i class="bi bi-person-fill me-2 text-primary"></i>
+          Personal Information
+        </h6>
+      </div>
+      <div class="card-body px-4">
+        <table class="table table-borderless table-sm">
+          <tr>
+            <td class="text-muted fw-semibold" style="width:35%;">Full Name</td>
+            <td>
+              <%= applicant.first_name %>
+              <%= applicant.middle_name || '' %>
+              <%= applicant.last_name %>
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-semibold">Birthday</td>
+            <td>
+              <%= new Date(applicant.birthday).toLocaleDateString('en-US', {
+                month: 'long', day: 'numeric', year: 'numeric'
+              }) %>
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-semibold">Gender</td>
+            <td><%= applicant.gender %></td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-semibold">Email</td>
+            <td><%= applicant.email %></td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-semibold">Contact</td>
+            <td><%= applicant.contact_number %></td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-semibold">Address</td>
+            <td><%= applicant.address %></td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-semibold">Desired Course</td>
+            <td><%= applicant.desired_course %></td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-semibold">Year Level</td>
+            <td>Year <%= applicant.desired_year_level %></td>
+          </tr>
+          <tr>
+            <td class="text-muted fw-semibold">Applied On</td>
+            <td>
+              <%= new Date(applicant.created_at).toLocaleDateString('en-US', {
+                month: 'long', day: 'numeric', year: 'numeric'
+              }) %>
+            </td>
+          </tr>
+          <% if (applicant.remarks) { %>
+            <tr>
+              <td class="text-muted fw-semibold">Remarks</td>
+              <td><%= applicant.remarks %></td>
+            </tr>
+          <% } %>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="col-lg-5">
+    <% if (applicant.status === 'Pending') { %>
+      <div class="card border-0 shadow-sm rounded-3 mb-3">
+        <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+          <h6 class="fw-bold mb-0">
+            <i class="bi bi-check2-circle me-2 text-success"></i>
+            Approve Application
+          </h6>
+        </div>
+        <div class="card-body px-4 pb-4">
+          <p class="text-muted small">
+            Approving will automatically create a student account
+            with a generated Student ID, username, and temporary password.
+            These credentials will be shown after approval.
+          </p>
+          <form method="POST"
+                action="/admin/applicants/<%= applicant.id %>/approve">
+            <button type="submit" class="btn btn-success w-100">
+              <i class="bi bi-check-circle-fill me-2"></i>Approve & Create Account
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+          <h6 class="fw-bold mb-0">
+            <i class="bi bi-x-circle me-2 text-danger"></i>
+            Reject Application
+          </h6>
+        </div>
+        <div class="card-body px-4 pb-4">
+          <form method="POST"
+                action="/admin/applicants/<%= applicant.id %>/reject">
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">
+                Reason (optional)
+              </label>
+              <textarea name="remarks" class="form-control form-control-sm"
+                        rows="2"
+                        placeholder="Enter reason for rejection..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-danger w-100">
+              <i class="bi bi-x-circle-fill me-2"></i>Reject Application
+            </button>
+          </form>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-body px-4 py-4 text-center text-muted">
+          <i class="bi bi-<%= applicant.status === 'Approved' ? 'check-circle-fill text-success' : 'x-circle-fill text-danger' %> fs-2 d-block mb-2"></i>
+          This application has been <strong><%= applicant.status %></strong>.
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+</div>

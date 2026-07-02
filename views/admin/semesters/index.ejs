@@ -1,0 +1,168 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="fw-bold mb-0" style="color:#1e2a3a;">Semesters</h4>
+    <p class="text-muted small mb-0">Manage school years and semesters.</p>
+  </div>
+</div>
+
+<% if (flash.success) { %>
+  <div class="alert alert-success alert-dismissible fade show py-2">
+    <i class="bi bi-check-circle-fill me-2"></i><%= flash.success %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+<% if (flash.error) { %>
+  <div class="alert alert-danger alert-dismissible fade show py-2">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i><%= flash.error %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+
+<div class="row g-4">
+
+  <!-- Create Form -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm rounded-3">
+      <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+        <h6 class="fw-bold mb-0">
+          <i class="bi bi-plus-circle-fill me-2 text-primary"></i>
+          Add Semester
+        </h6>
+      </div>
+      <div class="card-body px-4 pb-4">
+        <form method="POST" action="/admin/semesters/create"
+              class="needs-validation" novalidate>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">
+              School Year <span class="text-danger">*</span>
+            </label>
+            <input type="text" name="school_year" class="form-control"
+                   placeholder="2024-2025" required />
+            <div class="invalid-feedback">School year is required.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">
+              Semester <span class="text-danger">*</span>
+            </label>
+            <select name="semester" class="form-select" required>
+              <option value="">Select</option>
+              <option value="1st">1st Semester</option>
+              <option value="2nd">2nd Semester</option>
+              <option value="Summer">Summer</option>
+            </select>
+            <div class="invalid-feedback">Semester is required.</div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-plus-circle me-1"></i>Create Semester
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Semester List -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm rounded-3">
+      <div class="table-responsive">
+        <table class="table admin-table mb-0">
+          <thead>
+            <tr>
+              <th class="px-4">School Year</th>
+              <th>Semester</th>
+              <th class="text-center">Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (semesters.length === 0) { %>
+              <tr>
+                <td colspan="4" class="text-center text-muted py-4">
+                  No semesters yet.
+                </td>
+              </tr>
+            <% } else { %>
+              <% semesters.forEach(function(s) { %>
+                <tr>
+                  <td class="px-4 fw-semibold"><%= s.school_year %></td>
+                  <td><%= s.semester %> Semester</td>
+                  <td class="text-center">
+                    <% if (s.is_active) { %>
+                      <span class="badge bg-success-subtle text-success rounded-pill">
+                        Active
+                      </span>
+                    <% } else { %>
+                      <span class="badge bg-secondary-subtle text-secondary rounded-pill">
+                        Inactive
+                      </span>
+                    <% } %>
+                  </td>
+                  <td class="text-center">
+                    <% if (s.is_active) { %>
+                      <form method="POST"
+                            action="/admin/semesters/<%= s.id %>/deactivate"
+                            class="d-inline">
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-warning me-1"
+                                title="Deactivate">
+                          <i class="bi bi-pause-circle"></i>
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <form method="POST"
+                            action="/admin/semesters/<%= s.id %>/activate"
+                            class="d-inline">
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-success me-1"
+                                title="Set Active">
+                          <i class="bi bi-check-circle"></i>
+                        </button>
+                      </form>
+                    <% } %>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-danger"
+                            data-delete-id="<%= s.id %>"
+                            data-delete-name="<%= s.school_year %> - <%= s.semester %> Semester"
+                            data-delete-action="/admin/semesters/<%= s.id %>/delete"
+                            data-delete-label="semester">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-danger">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          Delete <span id="deleteItemLabel">item</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-1">You are about to delete:</p>
+        <p class="fw-bold fs-5 mb-1" id="deleteItemName"></p>
+        <p class="text-muted small mb-0">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-secondary"
+                data-bs-dismiss="modal">Cancel</button>
+        <form id="deleteForm" method="POST">
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash me-1"></i>Delete
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

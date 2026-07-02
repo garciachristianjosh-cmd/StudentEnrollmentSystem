@@ -1,0 +1,107 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="fw-bold mb-0" style="color:#1e2a3a;">Enrollment Requests</h4>
+    <p class="text-muted small mb-0">
+      Review and approve student enrollment requests.
+    </p>
+  </div>
+</div>
+
+<% if (flash.success) { %>
+  <div class="alert alert-success alert-dismissible fade show py-2">
+    <i class="bi bi-check-circle-fill me-2"></i><%= flash.success %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+<% if (flash.error) { %>
+  <div class="alert alert-danger alert-dismissible fade show py-2">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i><%= flash.error %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+
+<div class="card border-0 shadow-sm rounded-3">
+  <div class="table-responsive">
+    <table class="table admin-table mb-0">
+      <thead>
+        <tr>
+          <th class="px-4">Student</th>
+          <th>Subject</th>
+          <th class="text-center">Units</th>
+          <th>Schedule</th>
+          <th>Semester</th>
+          <th>Requested</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (requests.length === 0) { %>
+          <tr>
+            <td colspan="7" class="text-center text-muted py-5">
+              <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+              No pending enrollment requests.
+            </td>
+          </tr>
+        <% } else { %>
+          <% requests.forEach(function(r) { %>
+            <tr>
+              <td class="px-4">
+                <div class="fw-semibold small">
+                  <%= r.last_name %>, <%= r.first_name %>
+                </div>
+                <div class="text-muted" style="font-size:0.75rem;">
+                  <%= r.student_no %> · <%= r.course %>
+                </div>
+              </td>
+              <td>
+                <div class="fw-semibold small"><%= r.subject_code %></div>
+                <div class="text-muted" style="font-size:0.75rem;">
+                  <%= r.subject_name %>
+                </div>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-light text-dark border">
+                  <%= r.units %>
+                </span>
+              </td>
+              <td class="text-muted small"><%= r.schedule %></td>
+              <td class="text-muted small">
+                <% if (r.school_year) { %>
+                  <%= r.school_year %> · <%= r.semester %>
+                <% } else { %>
+                  —
+                <% } %>
+              </td>
+              <td class="text-muted small">
+                <%= new Date(r.enrolled_at).toLocaleDateString('en-US', {
+                  month: 'short', day: 'numeric', year: 'numeric'
+                }) %>
+              </td>
+              <td class="text-center">
+                <form method="POST"
+                      action="/admin/enrollment/requests/<%= r.enrollment_id %>/approve"
+                      class="d-inline">
+                  <button type="submit"
+                          class="btn btn-sm btn-success me-1"
+                          title="Approve">
+                    <i class="bi bi-check-lg"></i>
+                  </button>
+                </form>
+                <form method="POST"
+                      action="/admin/enrollment/requests/<%= r.enrollment_id %>/reject"
+                      class="d-inline">
+                  <button type="submit"
+                          class="btn btn-sm btn-danger"
+                          title="Reject"
+                          onclick="return confirm('Reject this enrollment request?')">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

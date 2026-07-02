@@ -24,6 +24,7 @@ exports.getByStudent = async (studentId) => {
      FROM enrollments e
      JOIN subjects sub ON sub.id = e.subject_id
      WHERE e.student_id = ?
+       AND e.status = 'enrolled'
      ORDER BY sub.subject_code ASC`,
     [studentId]
   );
@@ -121,14 +122,14 @@ exports.getUnitsForSubjects = async (subjectIds) => {
  * Enroll a student in multiple subjects.
  * Uses INSERT IGNORE as final safety net against duplicates.
  */
-exports.enrollSubjects = async (studentId, subjectIds) => {
+exports.enrollSubjects = async (studentId, subjectIds, semesterId = null) => {
   if (!subjectIds || subjectIds.length === 0) return;
 
-  const placeholders = subjectIds.map(() => '(?, ?)').join(', ');
-  const values       = subjectIds.flatMap(sid => [studentId, sid]);
+  const placeholders = subjectIds.map(() => '(?, ?, ?, "enrolled")').join(', ');
+  const values       = subjectIds.flatMap(sid => [studentId, sid, semesterId]);
 
   await db.execute(
-    `INSERT IGNORE INTO enrollments (student_id, subject_id)
+    `INSERT IGNORE INTO enrollments (student_id, subject_id, semester_id, status)
      VALUES ${placeholders}`,
     values
   );
@@ -288,4 +289,80 @@ exports.checkStudentConflicts = async (studentId, subjectIds) => {
   }
 
   return conflicts;
+};
+
+// ─── Self-enrollment: insert as pending ──────────────────────
+exports.enrollSubjectsPending = async (studentId, subjectIds, semesterId) => {
+  if (!subjectIds || subjectIds.length === 0) return;
+
+  const placeholders = subjectIds.map(() => '(?, ?, ?, "pending")').join(', ');
+  const values       = subjectIds.flatMap(sid => [studentId, sid, semesterId]);
+
+  await db.execute(
+    `INSERT IGNORE INTO enrollments (student_id, subject_id, semester_id, status)
+     VALUES ${placeholders}`,
+    values
+  );
+};
+
+// ─── Get all requests for a student ──────────────────────────
+exports.getRequestsByStudent = async (studentId) => {
+  const [rows] = await db.execute(
+    `SELECT
+       e.id, e.status, e.enrolled_at,
+       sub.subject_code, sub.subject_name,
+       sub.units, sub.schedule, sub.room,
+       sem.school_year, sem.semester
+     FROM enrollments e
+     JOIN subjects sub ON sub.id = e.subject_id
+     LEFT JOIN semesters sem ON sem.id = e.semester_id
+     WHERE e.student_id = ?
+     ORDER BY e.enrolled_at DESC`,
+    [studentId]
+  );
+  return rows;
+};
+
+// ─── Get pending requests for admin approval ──────────────────
+exports.getPendingRequests = async () => {
+  const [rows] = await db.execute(
+    `SELECT
+       e.id AS enrollment_id,
+       e.status,
+       e.enrolled_at,
+       s.id AS student_id,
+       s.student_id AS student_no,
+       s.first_name,
+       s.last_name,
+       s.course,
+       sub.subject_code,
+       sub.subject_name,
+       sub.units,
+       sub.schedule,
+       sem.school_year,
+       sem.semester
+     FROM enrollments e
+     JOIN students s   ON s.id   = e.student_id
+     JOIN subjects sub ON sub.id = e.subject_id
+     LEFT JOIN semesters sem ON sem.id = e.semester_id
+     WHERE e.status = 'pending'
+     ORDER BY e.enrolled_at ASC`
+  );
+  return rows;
+};
+
+// ─── Approve a single enrollment request ─────────────────────
+exports.approveRequest = async (enrollmentId) => {
+  await db.execute(
+    "UPDATE enrollments SET status = 'enrolled' WHERE id = ? AND status = 'pending'",
+    [enrollmentId]
+  );
+};
+
+// ─── Reject a single enrollment request ──────────────────────
+exports.rejectRequest = async (enrollmentId) => {
+  await db.execute(
+    "DELETE FROM enrollments WHERE id = ? AND status = 'pending'",
+    [enrollmentId]
+  );
 };

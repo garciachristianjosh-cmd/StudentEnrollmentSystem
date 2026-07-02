@@ -1,0 +1,95 @@
+<div class="mb-4">
+  <h4 class="fw-bold mb-0" style="color:#1e2a3a;">My Enrollment Requests</h4>
+  <p class="text-muted small mb-0">
+    Track the status of your enrollment submissions.
+  </p>
+</div>
+
+<% if (flash.success) { %>
+  <div class="alert alert-success alert-dismissible fade show py-2">
+    <i class="bi bi-check-circle-fill me-2"></i><%= flash.success %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+
+<% if (requests.length === 0) { %>
+  <div class="card border-0 shadow-sm rounded-3">
+    <div class="card-body text-center text-muted py-5">
+      <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+      No enrollment requests yet.
+      <div class="mt-2">
+        <a href="/student/enroll" class="btn btn-sm btn-primary">
+          Enroll in Subjects
+        </a>
+      </div>
+    </div>
+  </div>
+<% } else { %>
+  <div class="card border-0 shadow-sm rounded-3">
+    <div class="table-responsive">
+      <table class="table student-table mb-0">
+        <thead>
+          <tr>
+            <th class="px-4">Subject</th>
+            <th class="text-center">Units</th>
+            <th>Schedule</th>
+            <th>Semester</th>
+            <th>Submitted</th>
+            <th class="text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% requests.forEach(function(r) { %>
+            <tr>
+              <td class="px-4">
+                <div class="fw-semibold small"><%= r.subject_code %></div>
+                <div class="text-muted" style="font-size:0.75rem;">
+                  <%= r.subject_name %>
+                </div>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-light text-dark border">
+                  <%= r.units %>
+                </span>
+              </td>
+              <td class="text-muted small"><%= r.schedule %></td>
+              <td class="text-muted small">
+                <% if (r.school_year) { %>
+                  <%= r.school_year %> · <%= r.semester %>
+                <% } else { %>
+                  —
+                <% } %>
+              </td>
+              <td class="text-muted small">
+                <%= new Date(r.enrolled_at).toLocaleDateString('en-US', {
+                  month: 'short', day: 'numeric', year: 'numeric'
+                }) %>
+              </td>
+              <td class="text-center">
+                <% if (r.status === 'pending') { %>
+                  <span class="badge rounded-pill bg-warning-subtle text-warning">
+                    Pending
+                  </span>
+                <% } else if (r.status === 'enrolled') { %>
+                  <span class="badge rounded-pill bg-success-subtle text-success">
+                    Approved
+                  </span>
+                <% } else { %>
+                  <span class="badge rounded-pill bg-danger-subtle text-danger">
+                    Dropped
+                  </span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% } %>
+
+<div class="mt-3">
+  <a href="/student/enroll" class="btn btn-outline-primary btn-sm">
+    <i class="bi bi-plus-circle me-1"></i>Submit More Subjects
+  </a>
+</div>

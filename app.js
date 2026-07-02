@@ -53,6 +53,8 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use('/', require('./routes/public'));
+
 // ─── Routes ──────────────────────────────────────────────────
 app.use('/',        require('./routes/index'));
 app.use('/auth',    require('./routes/auth'));

@@ -1,0 +1,140 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h4 class="fw-bold mb-0" style="color:#1e2a3a;">Applicants</h4>
+    <p class="text-muted small mb-0"><%= total %> applicant(s) found</p>
+  </div>
+</div>
+
+<% if (flash.success) { %>
+  <div class="alert alert-success alert-dismissible fade show py-2">
+    <i class="bi bi-check-circle-fill me-2"></i><%= flash.success %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+<% if (flash.error) { %>
+  <div class="alert alert-danger alert-dismissible fade show py-2">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i><%= flash.error %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% } %>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm rounded-3 mb-3">
+  <div class="card-body py-3 px-4">
+    <form method="GET" action="/admin/applicants" class="d-flex gap-2">
+      <input type="text" name="search" class="form-control"
+             placeholder="Search by name, email, or course..."
+             value="<%= search %>" />
+      <select name="status" class="form-select" style="max-width:160px;">
+        <option value="">All Status</option>
+        <% ['Pending','Approved','Rejected'].forEach(function(s) { %>
+          <option value="<%= s %>"
+            <%= status === s ? 'selected' : '' %>><%= s %></option>
+        <% }) %>
+      </select>
+      <button type="submit" class="btn btn-primary px-4">
+        <i class="bi bi-search"></i>
+      </button>
+      <a href="/admin/applicants" class="btn btn-outline-secondary">
+        <i class="bi bi-x"></i>
+      </a>
+    </form>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="card border-0 shadow-sm rounded-3">
+  <div class="table-responsive">
+    <table class="table admin-table mb-0">
+      <thead>
+        <tr>
+          <th class="px-4">Name</th>
+          <th>Course</th>
+          <th class="text-center">Year</th>
+          <th>Email</th>
+          <th>Applied</th>
+          <th>Status</th>
+          <th class="text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if (applicants.length === 0) { %>
+          <tr>
+            <td colspan="7" class="text-center text-muted py-5">
+              <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+              No applicants found.
+            </td>
+          </tr>
+        <% } else { %>
+          <% applicants.forEach(function(a) { %>
+            <tr>
+              <td class="px-4">
+                <div class="fw-semibold">
+                  <%= a.last_name %>, <%= a.first_name %>
+                </div>
+              </td>
+              <td class="small"><%= a.desired_course %></td>
+              <td class="text-center small">Year <%= a.desired_year_level %></td>
+              <td class="text-muted small"><%= a.email %></td>
+              <td class="text-muted small">
+                <%= new Date(a.created_at).toLocaleDateString('en-US', {
+                  month: 'short', day: 'numeric', year: 'numeric'
+                }) %>
+              </td>
+              <td>
+                <% if (a.status === 'Pending') { %>
+                  <span class="badge rounded-pill bg-warning-subtle text-warning">
+                    Pending
+                  </span>
+                <% } else if (a.status === 'Approved') { %>
+                  <span class="badge rounded-pill bg-success-subtle text-success">
+                    Approved
+                  </span>
+                <% } else { %>
+                  <span class="badge rounded-pill bg-danger-subtle text-danger">
+                    Rejected
+                  </span>
+                <% } %>
+              </td>
+              <td class="text-center">
+                <a href="/admin/applicants/<%= a.id %>"
+                   class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-eye"></i>
+                </a>
+              </td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if (totalPages > 1) { %>
+    <div class="card-footer bg-white border-0 py-3 px-4">
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+            <a class="page-link"
+               href="/admin/applicants?page=<%= page-1 %>&search=<%= search %>&status=<%= status %>">
+              &laquo;
+            </a>
+          </li>
+          <% for (let p = 1; p <= totalPages; p++) { %>
+            <li class="page-item <%= p === page ? 'active' : '' %>">
+              <a class="page-link"
+                 href="/admin/applicants?page=<%= p %>&search=<%= search %>&status=<%= status %>">
+                <%= p %>
+              </a>
+            </li>
+          <% } %>
+          <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>">
+            <a class="page-link"
+               href="/admin/applicants?page=<%= page+1 %>&search=<%= search %>&status=<%= status %>">
+              &raquo;
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  <% } %>
+</div>

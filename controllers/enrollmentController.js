@@ -2,6 +2,7 @@
 const path            = require('path');
 const studentModel    = require('../models/studentModel');
 const enrollmentModel = require('../models/enrollmentModel');
+const semesterModel = require('../models/semesterModel');
 
 const view = (name) =>
   path.join(__dirname, '..', 'views', 'admin', 'enrollment', name + '.ejs');
@@ -171,7 +172,9 @@ exports.enroll = async (req, res) => {
     }
 
     // ── 5. All checks passed — enroll ─────────────────────────
-    await enrollmentModel.enrollSubjects(student.id, subjectIds);
+    const semester   = await semesterModel.getActive();
+    const semesterId = semester?.id || null;
+    await enrollmentModel.enrollSubjects(student.id, subjectIds, semesterId);
 
     const count = subjectIds.length;
     req.flash(
@@ -210,4 +213,43 @@ exports.remove = async (req, res) => {
   }
 
   res.redirect(`/admin/enrollment/${studentId}`);
+};
+
+// ─── GET /admin/enrollment/requests ──────────────────────────
+exports.pendingRequests = async (req, res) => {
+  try {
+    const requests = await enrollmentModel.getPendingRequests();
+    res.render('layouts/admin-layout', pageOptions(req, {
+      title:    'Enrollment Requests',
+      pageView: path.join(__dirname, '..', 'views', 'admin', 'enrollment', 'requests.ejs'),
+      requests
+    }));
+  } catch (err) {
+    console.error('[enrollmentController][pendingRequests]:', err);
+    res.status(500).render('500', { title: 'Error', error: err });
+  }
+};
+
+// ─── POST /admin/enrollment/requests/:id/approve ─────────────
+exports.approveRequest = async (req, res) => {
+  try {
+    await enrollmentModel.approveRequest(req.params.id);
+    req.flash('success', 'Enrollment request approved.');
+  } catch (err) {
+    console.error('[enrollmentController][approveRequest]:', err);
+    req.flash('error', 'Failed to approve request.');
+  }
+  res.redirect('/admin/enrollment/requests');
+};
+
+// ─── POST /admin/enrollment/requests/:id/reject ──────────────
+exports.rejectRequest = async (req, res) => {
+  try {
+    await enrollmentModel.rejectRequest(req.params.id);
+    req.flash('success', 'Enrollment request rejected.');
+  } catch (err) {
+    console.error('[enrollmentController][rejectRequest]:', err);
+    req.flash('error', 'Failed to reject request.');
+  }
+  res.redirect('/admin/enrollment/requests');
 };

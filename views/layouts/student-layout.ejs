@@ -24,6 +24,16 @@
       <i class="bi bi-calendar3"></i>
       <span class="d-none d-sm-inline">Schedule</span>
     </a>
+    <a href="/student/enroll"
+       class="<%= activePage === 'enroll' ? 'active' : '' %>">
+       <i class="bi bi-plus-circle-fill"></i>
+       <span class="d-none d-sm-inline">Enroll</span>
+    </a>
+    <a href="/student/requests"
+       class="<%= activePage === 'requests' ? 'active' : '' %>">
+       <i class="bi bi-hourglass-split"></i>
+       <span class="d-none d-sm-inline">My Requests</span>
+    </a>
 
     <div class="student-avatar ms-2">
       <%= user.firstName ? user.firstName.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase() %>

@@ -1,4 +1,6 @@
 // routes/admin.js
+const applicantController  = require('../controllers/applicantController');
+const semesterController   = require('../controllers/semesterController');
 const express              = require('express');
 const router               = express.Router();
 const adminController      = require('../controllers/adminController');
@@ -31,6 +33,11 @@ router.post('/subjects/:id/edit',   subjectController.postEdit);
 router.post('/subjects/:id/toggle', subjectController.toggleStatus);
 router.post('/subjects/:id/delete', subjectController.deleteSubject);
 
+// ─── Enrollment Requests ──────────────────────────────────────
+router.get('/enrollment/requests',                enrollmentController.pendingRequests);
+router.post('/enrollment/requests/:id/approve',   enrollmentController.approveRequest);
+router.post('/enrollment/requests/:id/reject',    enrollmentController.rejectRequest);
+
 // ─── Enrollment ───────────────────────────────────────────────
 router.get('/enrollment',
   enrollmentController.index);
@@ -44,5 +51,18 @@ router.post('/enrollment/:studentId/remove/:enrollmentId',
 // ─── Reports ─────────────────────────────────────────────────
 router.get('/reports',        reportController.index);
 router.get('/reports/export', reportController.exportCsv);
+
+// ─── Applicants ───────────────────────────────────────────────
+router.get('/applicants',              applicantController.index);
+router.get('/applicants/:id',          applicantController.show);
+router.post('/applicants/:id/approve', applicantController.approve);
+router.post('/applicants/:id/reject',  applicantController.reject);
+
+// ─── Semesters ────────────────────────────────────────────────
+router.get('/semesters',           semesterController.index);
+router.post('/semesters/create',   semesterController.postCreate);
+router.post('/semesters/:id/activate', semesterController.setActive);
+router.post('/semesters/:id/delete',   semesterController.deleteSemester);
+router.post('/semesters/:id/deactivate', semesterController.deactivate);
 
 module.exports = router;

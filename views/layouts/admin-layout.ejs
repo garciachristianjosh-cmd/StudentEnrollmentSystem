@@ -30,6 +30,22 @@
        class="nav-link <%= activePage === 'enrollment' ? 'active' : '' %>">
       <i class="bi bi-pencil-square"></i> Enrollment
     </a>
+    <a href="/admin/applicants"
+       class="nav-link <%= activePage === 'applicants' ? 'active' : '' %>">
+      <i class="bi bi-person-check-fill"></i> Applicants
+    </a>
+
+    <a href="/admin/enrollment/requests"
+       class="nav-link <%= activePage === 'enrollmentRequests' ? 'active' : '' %>">
+      <i class="bi bi-hourglass-split"></i> Enrollment Requests
+    </a>
+
+    <div class="nav-section-label mt-2">Settings</div>
+
+    <a href="/admin/semesters"
+       class="nav-link <%= activePage === 'semesters' ? 'active' : '' %>">
+      <i class="bi bi-calendar2-check-fill"></i> Semesters
+    </a>
     <div class="nav-section-label mt-2">Reports</div>
     <a href="/admin/reports"
        class="nav-link <%= activePage === 'reports' ? 'active' : '' %>">

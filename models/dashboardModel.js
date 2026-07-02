@@ -7,7 +7,8 @@ exports.getSummary = async () => {
     [totalSubjects],
     [totalEnrollments],
     [activeEnrollments],
-    [totalUnits]
+    [totalUnits],
+    [pendingApplicants]
   ] = await Promise.all([
     db.execute('SELECT COUNT(*) AS count FROM students'),
     db.execute(
@@ -16,6 +17,9 @@ exports.getSummary = async () => {
     db.execute('SELECT COUNT(*) AS count FROM enrollments'),
     db.execute(
       "SELECT COUNT(*) AS count FROM enrollments WHERE status = 'enrolled'"
+    ),
+    db.execute(
+      "SELECT COUNT(*) AS count FROM applicants WHERE status = 'Pending'"
     ),
     db.execute(
       `SELECT COALESCE(SUM(sub.units), 0) AS count
@@ -30,7 +34,8 @@ exports.getSummary = async () => {
     totalSubjects:     totalSubjects[0].count,
     totalEnrollments:  totalEnrollments[0].count,
     activeEnrollments: activeEnrollments[0].count,
-    totalUnits:        totalUnits[0].count
+    totalUnits:        totalUnits[0].count,
+    pendingApplicants:  pendingApplicants[0].count
   };
 };
 

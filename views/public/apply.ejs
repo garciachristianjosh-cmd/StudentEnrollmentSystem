@@ -1,0 +1,200 @@
+<%- include('../layouts/header') %>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark" style="background:#1e2a3a;">
+  <div class="container">
+    <span class="navbar-brand fw-bold">
+      <i class="bi bi-mortarboard-fill me-2 text-primary"></i>
+      Student Enrollment System
+    </span>
+    <a href="/auth/login" class="btn btn-primary btn-sm">
+       <i class="bi bi-box-arrow-in-right me-1"></i>Student Login
+    </a>
+  </div>
+</nav>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+
+      <div class="text-center mb-4">
+        <h3 class="fw-bold" style="color:#1e2a3a;">Online Admission</h3>
+        <p class="text-muted">
+          Fill out the form below to submit your application.
+        </p>
+      </div>
+
+      <% if (errors.length > 0) { %>
+        <div class="alert alert-danger mb-4">
+          <div class="fw-semibold mb-1">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            Please fix the following:
+          </div>
+          <ul class="mb-0 ps-3">
+            <% errors.forEach(function(e) { %>
+              <li><%= e %></li>
+            <% }) %>
+          </ul>
+        </div>
+      <% } %>
+
+      <form method="POST" action="/apply"
+            class="needs-validation" novalidate>
+
+        <!-- Personal Information -->
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+          <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+            <h6 class="fw-bold mb-0">
+              <i class="bi bi-person-fill me-2 text-primary"></i>
+              Personal Information
+            </h6>
+          </div>
+          <div class="card-body px-4 pb-4">
+            <div class="row g-3">
+
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                  First Name <span class="text-danger">*</span>
+                </label>
+                <input type="text" name="first_name" class="form-control"
+                       value="<%= old.first_name || '' %>"
+                       placeholder="Juan" required />
+                <div class="invalid-feedback">First name is required.</div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">Middle Name</label>
+                <input type="text" name="middle_name" class="form-control"
+                       value="<%= old.middle_name || '' %>"
+                       placeholder="Optional" />
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                  Last Name <span class="text-danger">*</span>
+                </label>
+                <input type="text" name="last_name" class="form-control"
+                       value="<%= old.last_name || '' %>"
+                       placeholder="dela Cruz" required />
+                <div class="invalid-feedback">Last name is required.</div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                  Birthday <span class="text-danger">*</span>
+                </label>
+                <input type="date" name="birthday" class="form-control"
+                       value="<%= old.birthday || '' %>" required />
+                <div class="invalid-feedback">Birthday is required.</div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                  Gender <span class="text-danger">*</span>
+                </label>
+                <select name="gender" class="form-select" required>
+                  <option value="">Select</option>
+                  <% ['Male','Female','Other'].forEach(function(g) { %>
+                    <option value="<%= g %>"
+                      <%= old.gender === g ? 'selected' : '' %>>
+                      <%= g %>
+                    </option>
+                  <% }) %>
+                </select>
+                <div class="invalid-feedback">Gender is required.</div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                  Contact Number <span class="text-danger">*</span>
+                </label>
+                <input type="text" name="contact_number" class="form-control"
+                       value="<%= old.contact_number || '' %>"
+                       placeholder="09XXXXXXXXX" required />
+                <div class="invalid-feedback">Contact number is required.</div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold">
+                  Email Address <span class="text-danger">*</span>
+                </label>
+                <input type="email" name="email" class="form-control"
+                       value="<%= old.email || '' %>"
+                       placeholder="juan@example.com" required />
+                <div class="invalid-feedback">
+                  Please enter a valid email address.
+                </div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-semibold">
+                  Address <span class="text-danger">*</span>
+                </label>
+                <textarea name="address" class="form-control" rows="2"
+                          placeholder="Complete address" required
+                          ><%= old.address || '' %></textarea>
+                <div class="invalid-feedback">Address is required.</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Academic Preference -->
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+          <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
+            <h6 class="fw-bold mb-0">
+              <i class="bi bi-mortarboard-fill me-2 text-success"></i>
+              Academic Preference
+            </h6>
+          </div>
+          <div class="card-body px-4 pb-4">
+            <div class="row g-3">
+
+              <div class="col-md-8">
+                <label class="form-label fw-semibold">
+                  Desired Course <span class="text-danger">*</span>
+                </label>
+                <input type="text" name="desired_course" class="form-control"
+                       value="<%= old.desired_course || '' %>"
+                       placeholder="BS Computer Science" required />
+                <div class="invalid-feedback">Course is required.</div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">
+                  Year Level <span class="text-danger">*</span>
+                </label>
+                <select name="desired_year_level" class="form-select" required>
+                  <option value="">Select</option>
+                  <% [1,2,3,4,5].forEach(function(y) { %>
+                    <option value="<%= y %>"
+                      <%= old.desired_year_level == y ? 'selected' : '' %>>
+                      Year <%= y %>
+                    </option>
+                  <% }) %>
+                </select>
+                <div class="invalid-feedback">Year level is required.</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="bi bi-send-fill me-2"></i>Submit Application
+          </button>
+        </div>
+
+        <p class="text-center text-muted small mt-3">
+          Already have an account?
+          <a href="/auth/login">Login here</a>
+        </p>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>

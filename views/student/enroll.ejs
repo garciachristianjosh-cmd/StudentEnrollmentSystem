@@ -68,12 +68,6 @@
     </div>
   </div>
 
-  <!-- Hidden meta for JS -->
-  <div id="enrollmentMeta"
-       data-current-units="<%= currentUnits %>"
-       data-max-units="<%= maxUnits %>"
-       style="display:none;"></div>
-
   <form method="POST" action="/student/enroll">
     <div class="card border-0 shadow-sm rounded-3">
       <div class="card-header bg-white border-0 pt-4 pb-2 px-4">
@@ -132,21 +126,19 @@
 
       <div class="card-footer bg-white border-0 px-4 py-3">
         <div class="d-flex align-items-center justify-content-between">
-          <div class="small text-muted">
-            <span id="selectedCount">0 selected</span>
-            &nbsp;·&nbsp;
-            <span id="selectedUnits">0 units</span>
-            &nbsp;·&nbsp;
-            After: <span id="projectedUnits"><%= currentUnits %></span>
-            / <%= maxUnits %>
+          <div class="small text-muted" id="selectionSummary">
+            0 selected &nbsp;·&nbsp; 0 units &nbsp;·&nbsp;
+            After: <%= currentUnits %> / <%= maxUnits %>
           </div>
           <div class="d-flex gap-2">
             <a href="/student/requests"
                class="btn btn-outline-secondary btn-sm">
               View Requests
             </a>
-            <button type="submit" class="btn btn-primary px-4"
-                    id="enrollBtn" disabled>
+            <button type="submit"
+                    class="btn btn-primary px-4"
+                    id="enrollBtn"
+                    disabled>
               <i class="bi bi-send-fill me-2"></i>Submit for Approval
             </button>
           </div>
@@ -156,3 +148,79 @@
   </form>
 
 <% } %>
+
+<div id="enrollMeta"
+     data-current-units="<%= currentUnits %>"
+     data-max-units="<%= maxUnits %>"
+     style="display:none;"></div>
+
+<script>
+(function () {
+  var meta         = document.getElementById('enrollMeta');
+  var currentUnits = parseInt(meta.getAttribute('data-current-units')) || 0;
+  var maxUnits     = parseInt(meta.getAttribute('data-max-units'))     || 25;
+
+  var selectAllCb = document.getElementById('selectAll');
+  var enrollBtn   = document.getElementById('enrollBtn');
+  var summary     = document.getElementById('selectionSummary');
+  var checkboxes  = Array.from(document.querySelectorAll('.subject-checkbox'));
+  var progressBar = document.getElementById('unitProgressBar');
+
+  if (progressBar) {
+    progressBar.style.width = progressBar.getAttribute('data-width') + '%';
+  }
+
+  function updateFooter() {
+    var checked     = checkboxes.filter(function (cb) { return cb.checked; });
+    var count       = checked.length;
+    var units       = checked.reduce(function (sum, cb) {
+      return sum + parseInt(cb.getAttribute('data-units') || 0);
+    }, 0);
+    var projected   = currentUnits + units;
+    var wouldExceed = projected > maxUnits;
+
+    if (summary) {
+      summary.innerHTML =
+        count + ' selected &nbsp;&middot;&nbsp; ' +
+        units + ' unit' + (units !== 1 ? 's' : '') +
+        ' &nbsp;&middot;&nbsp; After: ' +
+        '<span class="' + (wouldExceed ? 'text-danger fw-bold' : '') + '">' +
+        projected + '</span> / ' + maxUnits;
+    }
+
+    if (enrollBtn) {
+      enrollBtn.disabled  = count === 0 || wouldExceed;
+      enrollBtn.className = 'btn px-4 ' +
+        (wouldExceed ? 'btn-danger' : 'btn-primary');
+    }
+
+    if (selectAllCb) {
+      if (count === 0) {
+        selectAllCb.checked       = false;
+        selectAllCb.indeterminate = false;
+      } else if (count === checkboxes.length) {
+        selectAllCb.checked       = true;
+        selectAllCb.indeterminate = false;
+      } else {
+        selectAllCb.checked       = false;
+        selectAllCb.indeterminate = true;
+      }
+    }
+  }
+
+  checkboxes.forEach(function (cb) {
+    cb.addEventListener('change', updateFooter);
+  });
+
+  if (selectAllCb) {
+    selectAllCb.addEventListener('change', function () {
+      checkboxes.forEach(function (cb) {
+        cb.checked = selectAllCb.checked;
+      });
+      updateFooter();
+    });
+  }
+
+  updateFooter();
+})();
+</script>

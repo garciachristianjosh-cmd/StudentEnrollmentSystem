@@ -219,11 +219,13 @@ exports.remove = async (req, res) => {
 exports.pendingRequests = async (req, res) => {
   try {
     const requests = await enrollmentModel.getPendingRequests();
-    res.render('layouts/admin-layout', pageOptions(req, {
-      title:    'Enrollment Requests',
-      pageView: path.join(__dirname, '..', 'views', 'admin', 'enrollment', 'requests.ejs'),
+    res.render('layouts/admin-layout', {
+      user:       req.session.user,
+      activePage: 'enrollmentRequests',  // ← was 'enrollment'
+      title:      'Enrollment Requests',
+      pageView:   path.join(__dirname, '..', 'views', 'admin', 'enrollment', 'requests.ejs'),
       requests
-    }));
+    });
   } catch (err) {
     console.error('[enrollmentController][pendingRequests]:', err);
     res.status(500).render('500', { title: 'Error', error: err });

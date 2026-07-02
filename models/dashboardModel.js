@@ -1,41 +1,34 @@
-// models/dashboardModel.js
 const db = require('../config/database');
 
 exports.getSummary = async () => {
   const [
-    [totalStudents],
-    [totalSubjects],
-    [totalEnrollments],
-    [activeEnrollments],
-    [totalUnits],
-    [pendingApplicants]
+    [totalStudentsResult],
+    [totalSubjectsResult],
+    [totalEnrollmentsResult],
+    [activeEnrollmentsResult],
+    [totalUnitsResult],
+    [pendingApplicantsResult]
   ] = await Promise.all([
     db.execute('SELECT COUNT(*) AS count FROM students'),
-    db.execute(
-      'SELECT COUNT(*) AS count FROM subjects WHERE is_active = 1'
-    ),
+    db.execute('SELECT COUNT(*) AS count FROM subjects WHERE is_active = 1'),
     db.execute('SELECT COUNT(*) AS count FROM enrollments'),
-    db.execute(
-      "SELECT COUNT(*) AS count FROM enrollments WHERE status = 'enrolled'"
-    ),
-    db.execute(
-      "SELECT COUNT(*) AS count FROM applicants WHERE status = 'Pending'"
-    ),
+    db.execute("SELECT COUNT(*) AS count FROM enrollments WHERE status = 'enrolled'"),
     db.execute(
       `SELECT COALESCE(SUM(sub.units), 0) AS count
        FROM enrollments e
        JOIN subjects sub ON sub.id = e.subject_id
        WHERE e.status = 'enrolled'`
-    )
+    ),
+    db.execute("SELECT COUNT(*) AS count FROM applicants WHERE status = 'Pending'")
   ]);
 
   return {
-    totalStudents:     totalStudents[0].count,
-    totalSubjects:     totalSubjects[0].count,
-    totalEnrollments:  totalEnrollments[0].count,
-    activeEnrollments: activeEnrollments[0].count,
-    totalUnits:        totalUnits[0].count,
-    pendingApplicants:  pendingApplicants[0].count
+    totalStudents:      totalStudentsResult[0].count,
+    totalSubjects:      totalSubjectsResult[0].count,
+    totalEnrollments:   totalEnrollmentsResult[0].count,
+    activeEnrollments:  activeEnrollmentsResult[0].count,
+    totalUnits:         totalUnitsResult[0].count,
+    pendingApplicants:  pendingApplicantsResult[0].count
   };
 };
 
@@ -60,16 +53,12 @@ exports.getRecentEnrollments = async () => {
   return rows;
 };
 
-/**
- * Enrollment count grouped by course.
- * Powers the breakdown table on the dashboard.
- */
 exports.getCourseBreakdown = async () => {
   const [rows] = await db.execute(
     `SELECT
        s.course,
-       COUNT(DISTINCT s.id)  AS student_count,
-       COUNT(e.id)           AS enrollment_count,
+       COUNT(DISTINCT s.id)        AS student_count,
+       COUNT(e.id)                 AS enrollment_count,
        COALESCE(SUM(sub.units), 0) AS total_units
      FROM students s
      LEFT JOIN enrollments e  ON e.student_id = s.id

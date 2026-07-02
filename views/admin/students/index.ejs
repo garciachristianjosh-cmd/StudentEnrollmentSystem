@@ -105,9 +105,10 @@
                 <button type="button"
                         class="btn btn-sm btn-outline-danger"
                         title="Delete"
-                        data-id="<%= s.id %>"
-                        data-name="<%= s.last_name %>, <%= s.first_name %>"
-                        onclick="confirmDelete(this)">
+                        data-delete-id="<%= s.id %>"
+                        data-delete-name="<%= s.last_name %>, <%= s.first_name %>"
+                        data-delete-action="/admin/students/<%= s.id %>/delete"
+                        data-delete-label="student">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>
@@ -160,16 +161,17 @@
     <div class="modal-content border-0 shadow">
       <div class="modal-header border-0 pb-0">
         <h5 class="modal-title fw-bold text-danger">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Student
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          Delete <span id="deleteItemLabel">item</span>
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close"
+                data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <p class="mb-1">You are about to delete:</p>
-        <p class="fw-bold fs-5 mb-1" id="deleteStudentName"></p>
-        <p class="text-muted small mb-3">
-          This will permanently remove the student and all their
-          enrollment records. This action cannot be undone.
+        <p class="fw-bold fs-5 mb-1" id="deleteItemName"></p>
+        <p class="text-muted small mb-0">
+          This action cannot be undone.
         </p>
       </div>
       <div class="modal-footer border-0 pt-0">
@@ -184,14 +186,3 @@
     </div>
   </div>
 </div>
-
-<script>
-  function confirmDelete(btn) {
-    const id   = btn.getAttribute('data-id');
-    const name = btn.getAttribute('data-name');
-    document.getElementById('deleteStudentName').textContent = name;
-    document.getElementById('deleteForm').action =
-      '/admin/students/' + id + '/delete';
-    new bootstrap.Modal(document.getElementById('deleteModal')).show();
-  }
-</script>

@@ -271,3 +271,20 @@ body.admin-body {
   tr                   { break-inside: avoid; }
   .card                { break-inside: avoid; }
 }
+
+/* ── Session warning (no print) ──────────────────────────────── */
+#sessionWarningToast { display: block; }
+
+@media print {
+  #sessionWarningToast { display: none !important; }
+}
+
+/* ── Bootstrap tab border fix for reports ────────────────────── */
+.nav-tabs .nav-link.active {
+  border-bottom-color: #fff;
+}
+
+/* ── Stat card value size fix on small screens ───────────────── */
+@media (max-width: 575.98px) {
+  .stat-value { font-size: 1.5rem; }
+}

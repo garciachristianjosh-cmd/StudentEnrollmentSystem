@@ -84,7 +84,7 @@ CREATE TABLE enrollments (
 
   CONSTRAINT fk_enrollment_subject
     FOREIGN KEY (subject_id) REFERENCES subjects(id)
-    ON DELETE CASCADE ON UPDATE CASCADE
+    ON DELETE RESTRICT ON UPDATE CASCADE,
 );
 
 -- ─── Seed: Default Admin Account ─────────────────────────────

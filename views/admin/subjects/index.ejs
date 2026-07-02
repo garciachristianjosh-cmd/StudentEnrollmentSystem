@@ -124,10 +124,10 @@
                 <button type="button"
                         class="btn btn-sm btn-outline-danger"
                         title="Delete"
-                        data-id="<%= s.id %>"
-                        data-name="<%= s.subject_name %>"
-                        data-code="<%= s.subject_code %>"
-                        onclick="confirmDelete(this)">
+                        data-delete-id="<%= s.id %>"
+                        data-delete-name="<%= s.subject_name %>"
+                        data-delete-action="/admin/subjects/<%= s.id %>/delete"
+                        data-delete-label="subject">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>
@@ -180,18 +180,22 @@
     <div class="modal-content border-0 shadow">
       <div class="modal-header border-0 pb-0">
         <h5 class="modal-title fw-bold text-danger">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i>Delete Subject
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>
+          Delete <span id="deleteItemLabel">item</span>
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close"
+                data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <p class="mb-1">You are about to delete:</p>
-        <p class="fw-bold fs-5 mb-0" id="deleteSubjectName"></p>
-        <p class="text-muted small mb-3" id="deleteSubjectCode"></p>
-        <div class="alert alert-warning py-2 small mb-0">
+        <p class="fw-bold fs-5 mb-1" id="deleteItemName"></p>
+        <p class="text-muted small mb-0">
+          This action cannot be undone.
+        </p>
+        <div class="alert alert-warning py-2 small mt-3 mb-0">
           <i class="bi bi-exclamation-triangle-fill me-1"></i>
-          If students are enrolled in this subject, deletion will be blocked.
-          Use <strong>Deactivate</strong> instead.
+          If students are enrolled in this subject, deletion will
+          be blocked. Use <strong>Deactivate</strong> instead.
         </div>
       </div>
       <div class="modal-footer border-0 pt-0">
@@ -206,16 +210,3 @@
     </div>
   </div>
 </div>
-
-<script>
-  function confirmDelete(btn) {
-    const id   = btn.getAttribute('data-id');
-    const name = btn.getAttribute('data-name');
-    const code = btn.getAttribute('data-code');
-    document.getElementById('deleteSubjectName').textContent = name;
-    document.getElementById('deleteSubjectCode').textContent = code;
-    document.getElementById('deleteForm').action =
-      '/admin/subjects/' + id + '/delete';
-    new bootstrap.Modal(document.getElementById('deleteModal')).show();
-  }
-</script>

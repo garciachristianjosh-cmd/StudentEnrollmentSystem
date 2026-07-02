@@ -173,3 +173,18 @@ body.student-body {
   font-size: 0.88rem;
   color: #374151;
 }
+
+/* ── Student Print Styles ────────────────────────────────────── */
+@media print {
+  #student-nav         { display: none !important; }
+  .student-content     { padding: 0 !important; }
+  .no-print            { display: none !important; }
+  .card                { box-shadow: none !important; }
+  .schedule-card       { break-inside: avoid; }
+  body                 { background: #fff !important; }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
